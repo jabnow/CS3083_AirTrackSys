@@ -3,12 +3,12 @@ Implementation Air Ticket Reservation System as a web-based application POC
 # Online Air Ticket Reservation System
 
 ## Project Overview
-This project, created for the "Intro to Databases (CS-UY 3083)" course at NYU Tandon School of Engineering under Professor Ratan Dey, involves designing, implementing, and deploying an online Air Ticket Reservation System. The project covers the full database development lifecycle: conceptual design, logical design, database implementation, and the creation of an associated web-based application.
+This is the semester project for "Intro to Databases (CS-UY 3083)" course at NYU Tandon with Professor RatanDey. It involves designing, implementing, and deploying an online Air Ticket Reservation System, covering the full database development lifecycle: conceptual design, logical design, database implementation, and the creation of an associated web-based application.
 
 ### Team Members:
-- [Insert Name & NetID of Member 1]
-- [Insert Name & NetID of Member 2, if applicable]
-- [Insert Name & NetID of Member 3, if applicable]
+- Dorien Zhang
+- Joy Wang
+- Vihan Vora
 
 ## Project Parts and Deliverables
 
@@ -20,7 +20,7 @@ Design an ER diagram for the online Air Ticket Reservation System based on the p
 #### ER Diagram:
 Upload your ER Diagram here:
 
-![ER Diagram](path_to_your_uploaded_image "ER Diagram")
+![ER Diagram](https://github.com/user-attachments/assets/6506136a-31e2-4d9e-aaa5-50de3d019c92)
 
 ---
 
@@ -39,7 +39,7 @@ Derive a relational schema from your ER diagram. Underline primary keys and use 
 #### Relational Schema Diagram:
 Upload your Relational Schema Diagram here:
 
-![Relational Schema Diagram](path_to_your_uploaded_image "Relational Schema Diagram")
+![Relational Schema Diagram](https://github.com/user-attachments/assets/0704a8e7-e6b3-443b-a1f7-533e2c21d055)
 
 ---
 
@@ -68,9 +68,9 @@ Implement the Air Ticket Reservation System as a web-based application using you
 
 ## Contribution Statement:
 Clearly state the tasks completed by each team member:
-- Member 1: Tasks
-- Member 2: Tasks
-- Member 3: Tasks
+- Dorien: tbd
+- Joy: tbd
+- Vihan: tbd
 
 ---
 
