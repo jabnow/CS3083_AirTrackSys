@@ -46,7 +46,8 @@ class Airplane(db.Model):
 
     
 class Flight(db.Model):
-    ...
+    __tablename__ = 'flight'
+    
 
 class Customer(db.Model, UserMixin):    
     ...

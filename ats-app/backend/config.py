@@ -11,7 +11,7 @@ class Config:
     SQL_HOST     = os.getenv(f"SQL_HOST_{SQL_SERVER}")
     SQL_USER     = os.getenv(f"SQL_USER_{SQL_SERVER}")
     SQL_PASSWORD = os.getenv(f"SQL_PASSWORD_{SQL_SERVER}")
-    SQL_DB       = os.getenv(f"SQL_DB_{SQL_SERVER}", 'air_traffic_reservation_system') # change "ats" to your database name
+    SQL_DB       = os.getenv(f"SQL_DB_{SQL_SERVER}", 'air_traffic_reservation_system') 
 
     SQLALCHEMY_DATABASE_URI = (
         # mysql+mysqlconnector://username:password@localhost/db_name
