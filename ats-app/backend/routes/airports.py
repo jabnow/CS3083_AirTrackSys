@@ -57,4 +57,4 @@ def create_airport():
         return jsonify({'msg': 'invalid field or duplicate key'}), 409
     cursor.close()
     connection.close()
-    return jsonify({'msg': 'airplane created successfully'}), 201
+    return jsonify({'msg': 'airport created successfully'}), 201
