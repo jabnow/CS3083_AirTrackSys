@@ -51,6 +51,7 @@ class Flight(db.Model):
 
 class Customer(db.Model, UserMixin):    
     ...
+    
 
 class Ticket(db.Model):    
     ...

@@ -24,4 +24,4 @@ yarn-error.log*
 
 #files
 venv/
-URI/
+credentials/
