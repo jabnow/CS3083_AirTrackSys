@@ -1,3 +1,4 @@
+
 // src/pages/RateFlight.jsx
 import React from 'react';
 

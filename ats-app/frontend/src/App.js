@@ -45,6 +45,7 @@ function App() {
         <Route path="/add-airport" element={<AddAirport />} />
         <Route path="/flight-ratings" element={<FlightRatings />} />
         <Route path="/reports" element={<Reports />} />
+
       </Routes>
     </div>
   );
