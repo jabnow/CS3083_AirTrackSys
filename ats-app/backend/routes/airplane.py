@@ -9,7 +9,7 @@ airplane_api = Blueprint('airplane_api', __name__, url_prefix='/api/airplane')
 
 @airplane_api.route('/', methods=['PUT'])
 @login_required
-def create_airplane():
+def add_airplane():
     try:
         body = utility.convert_Body(
             json.loads(request.data.decode('utf-8')),
