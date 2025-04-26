@@ -14,8 +14,8 @@ def create_airplane():
         body = utility.convert_Body(
             json.loads(request.data.decode('utf-8')),
             {
-                'airline_name': 'airplane_ID',
-                'owner_name' : 'ower_name',
+                'airplane_ID': 'airplane_ID',
+                'owner_name' : 'owner_name',
                 'seats' : 'seats',
                 'manufacturer' : 'manufacturer'
             }

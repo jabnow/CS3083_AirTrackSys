@@ -22,7 +22,7 @@ from routes.purchases   import purchases_api
 from routes.tickets   import tickets_api
 
 app.register_blueprint(airplane_api, url_prefix='/api/airplane')    # started - JW
-app.register_blueprint(airports_api, url_prefix='/api/airports')
+app.register_blueprint(airports_api, url_prefix='/api/airports')    # attempting - DZ
 app.register_blueprint(auth_api, url_prefix='/api/auth')            # started - JW
 app.register_blueprint(customer_api, url_prefix='/api/customers')
 app.register_blueprint(flights_api, url_prefix='/api/flights')      
