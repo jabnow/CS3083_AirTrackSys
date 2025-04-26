@@ -24,4 +24,4 @@ yarn-error.log*
 
 #files
 venv/
-credentials/
+ats-app/backend/credentials.py
