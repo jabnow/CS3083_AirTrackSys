@@ -4,6 +4,36 @@
 from dateutil import parser, relativedelta
 import datetime
 
+
+def createSqlQuery(scheme: list, fields: dict):
+    sql = ""
+
+    for item in scheme:
+        if item["name"] not in fields:
+            continue
+
+        selector = item["selector"].replace("%s", f"%({item['name']})s")
+        sql += " AND " + selector
+
+    return sql
+
+
+def createSqlUpdate(scheme: list, fields: dict):
+    sql = ""
+
+    for item in scheme:
+        if item["name"] not in fields:
+            continue
+
+        selector = item["selector"].replace("%s", f"%({item['name']})s")
+        sql += selector + ", "
+
+    if len(sql) == 0:
+        return sql
+
+    return sql[:-2]
+
+
 def convertDate(date_string):
     """
     Convert a date string to a date object.
@@ -13,7 +43,7 @@ def convertDate(date_string):
     except ValueError:
         return None
     
-def convert_Datetime(date_string):
+def convertDatetime(date_string):
     """
     Convert a date string to a datetime object.
     """
@@ -22,7 +52,7 @@ def convert_Datetime(date_string):
     except ValueError:
         return None
 
-def convert_Month(date_string):
+def convertMonth(date_string):
     """
     Convert a date string to a month object.
     """
@@ -32,38 +62,113 @@ def convert_Month(date_string):
         return None
     
     
-def convert_body(input_json: dict, field_map: dict, auto_date: bool = False) -> dict:
-    """
-    Rename and validate fields from input_json according to field_map.
-    field_map keys are expected in input_json; values are target names.
-    If auto_date=True, fields ending in '_date' will be parsed as ISO dates.
-
-    Returns a new dict with mapped keys, or False if a field is missing.
-    Raises ValueError on invalid date formats when auto_date is enabled.
-    """
+def nextMonth(date):
+    if "-" not in date:
+        date = date[:4] + "-" + date[4:]
+    return (parser.parse(date) + relativedelta.relativedelta(months=1)).strftime("%Y%m")
+    
+    
+def convertBody(body, format, **kwargs):
     result = {}
-    for input_field, target_field in field_map.items():
-        if input_field not in input_json:
-            return False
-        value = input_json[input_field]
-        if auto_date and input_field.lower().endswith('_date'):
-            # parse ISO8601 date or datetime
-            try:
-                # Accept both date and datetime strings
-                parsed = datetime.datetime.fromisoformat(value)
-            except Exception as e:
-                raise ValueError(f"Invalid date format for '{input_field}': {e}")
-            result[target_field] = parsed
-        else:
-            result[target_field] = value
+
+    for item in format.keys():
+        path = format[item].split(".")
+
+        optional = False
+        if item[-1] == "?":
+            optional = True
+            item = item[:-1]
+
+        value = body
+        for subpath in path:
+            if subpath in value.keys():
+                value = value[subpath]
+            elif optional:
+                value = None
+                break
+            else:
+                return False
+
+        if kwargs.get("auto_date", None) == True and value is not None:
+            if "date_time" in item:
+                value = convertDatetime(value)
+            elif "date" in item:
+                value = convertDate(value)
+            elif "month" in item:
+                value = convertMonth(value)
+
+        result[item] = value
+
     return result
 
 
-def get_staff(cursor, username: str, field_name: str) -> str:
+def convertParams(params, format, **kwargs):
+    result = {}
+
+    for item in format.keys():
+        path = format[item]
+
+        optional = False
+        if item[-1] == "?":
+            optional = True
+            item = item[:-1]
+
+        if params.get(path) == None:
+            if optional:
+                continue
+            else:
+                return False
+        else:
+            if kwargs.get("auto_date", None) == True:
+                if "date_time" in item:
+                    result[item] = convertDatetime(params.get(path))
+                elif "date" in item:
+                    result[item] = convertDate(params.get(path))
+                elif "month" in item:
+                    result[item] = convertMonth(params.get(path))
+                else:
+                    result[item] = params.get(path)
+            else:
+                result[item] = params.get(path)
+
+    return result
+
+# DB QUERIES
+
+def getStaff(cursor, username, *args):
     """
     Query the Airline_Staff table for a specific field of a given username.
     Returns single value or None.
     """
-    query = f"SELECT {field_name} FROM Airline_Staff WHERE username = %s"
-    cursor.execute(query, (username,))
+    select = ""
+    if len(args) == 0:
+        select = "*"
+    else:
+        for item in args:
+            select += item + ", "
+        select = select[:-2]
+        
+    cursor.execute(
+        """
+        SELECT {select}
+            FROM airline_staff
+            WHERE username = %s
+    """.format(
+            select=select
+        ),
+        {"username": username},
+    )
     return cursor.fetchone()
+
+# UNFINISHED
+
+def getCustomer(cursor, email):
+    ...
+    
+
+def getFlight(cursor, airline, flight_number, departure_date_time):
+    ...
+    
+    
+
+    

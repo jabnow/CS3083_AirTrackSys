@@ -2,20 +2,20 @@ from flask import Blueprint, jsonify, request
 import utility  # it's a custom file
 from flask_login import login_required, current_user
 import json
-from db import get_db
+from db import getdb
 from config import Config
 
 airplane_api = Blueprint('airplane_api', __name__, url_prefix='/api/airplane')
 
 @airplane_api.route('/', methods=['PUT'])
 @login_required
-def create_airplane():
+def add_airplane():
     try:
         body = utility.convert_Body(
             json.loads(request.data.decode('utf-8')),
             {
-                'airline_name': 'airplane_ID',
-                'owner_name' : 'ower_name',
+                'airplane_ID': 'airplane_ID',
+                'owner_name' : 'owner_name',
                 'seats' : 'seats',
                 'manufacturer' : 'manufacturer'
             }
@@ -38,7 +38,7 @@ def create_airplane():
 
     
     # apparently all staff have to be employed by an airline
-    connection = get_db()
+    connection = getdb()
     cursor = connection.cursor()
     airline_staff = utility.get_staff(
         cursor,
