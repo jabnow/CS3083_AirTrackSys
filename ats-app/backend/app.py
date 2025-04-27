@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 import mysql.connector as _mysql_connector
 from config import Config
-import db
+from db import getdb
 
 # Make App
 app = Flask(__name__)
@@ -51,6 +51,25 @@ def index():
         return '<h2> Database connection is successful! :D </h2>'
     else:
         return '<h2> Database connection failed... :C </h2>'
+    
+    
+    
+# test if the app is running
+# in bash: curl http://localhost:5000/api/health
+# expected output: {"db": true}
+@app.route('/api/health', methods=['GET'])
+def healthcheck():
+    try:
+        conn = getdb()
+        cur = conn.cursor()
+        cur.execute('SELECT 1')
+        ok = cur.fetchone()[0] == 1
+        cur.close()
+        conn.close()
+        return {'db': ok}, 200
+    except Exception as e:
+        return {'db': False, 'error': str(e)}, 500
+
     
     
 if __name__ == '__main__':

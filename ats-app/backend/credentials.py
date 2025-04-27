@@ -1,6 +1,6 @@
 DB_CONFIG = {
-    'host': 'localhost',
+    'host': 'localhost',    # 127.0.0.1
     'user': 'root',
-    'password': 'beans',
+    'password': '',
     'database': 'air_traffic_reservation_system'
 }

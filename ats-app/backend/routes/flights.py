@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from db import getdb
 import utility
 from datetime import datetime
+# from ..constant import valid_status
 
 # Blueprint for flight management
 flights_api = Blueprint('flights_api', __name__, url_prefix='/api/flights')
@@ -154,7 +155,6 @@ def update_status():
     Expects JSON: airline_name, flight_number, departure_timestamp, status
     """
     valid_status = ["scheduled", "ontime", "delayed", "departed", "arrived"]
-
     try:
         body = utility.convertBody(
             request.get_json() or {},

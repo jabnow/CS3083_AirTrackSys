@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 import utility  # it's a custom file
 from flask_login import login_required, current_user
 import json
-from db import get_db
+from db import getdb
 from config import Config
 
 customer_api = Blueprint('customer_api', __name__, url_prefix='/api/customers')
