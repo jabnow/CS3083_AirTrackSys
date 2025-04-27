@@ -8,3 +8,5 @@ purchases_api = Blueprint('purchases_api', __name__, url_prefix='/api/purchases'
 @login_required
 def my_purchases():
     return jsonify(Purchases.get_by_customer(current_user.id))
+
+# test
