@@ -32,7 +32,7 @@ def create_customer():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
     
-    connection = get_db()
+    connection = getdb()
     cursor = connection.cursor()
 
     # no other validation needed? 
