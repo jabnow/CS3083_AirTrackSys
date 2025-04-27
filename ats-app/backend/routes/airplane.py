@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 import utility  # it's a custom file
 from flask_login import login_required, current_user
 import json
-from db import get_db
+from db import getdb
 from config import Config
 
 airplane_api = Blueprint('airplane_api', __name__, url_prefix='/api/airplane')
@@ -38,7 +38,7 @@ def add_airplane():
 
     
     # apparently all staff have to be employed by an airline
-    connection = get_db()
+    connection = getdb()
     cursor = connection.cursor()
     airline_staff = utility.get_staff(
         cursor,

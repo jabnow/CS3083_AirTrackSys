@@ -1,0 +1,52 @@
+CUSTOMER use cases
+
+1. View My Flights
+    Implemented in routes/flights.py → schedule(), under the if current_user.role=='customer' branch:
+    Also available in routes/customers.py
+
+2. Search for Flights
+    routes/flights.py → future_flights() handles one-way and round-trip search by departure/return dates, source/destination filters.
+
+3. Purchase Tickets
+    routes/tickets.py → purchase_ticket():
+    Checks capacity vs. airplane seats
+    Calculates dynamic price (adds 20% if ≥60% full)
+    Inserts into payment_info, ticket, and purchases tables.
+
+4. Cancel Trip
+    routes/tickets.py → cancel_ticket(ticket_id):
+    Verifies ownership & >24 hr lead time
+    Deletes from purchases and ticket.
+
+5. Give Ratings & Comments
+    routes/ratings.py (or your spending.py/reports.py refactor) exposes:
+    GET /api/ratings to list all comments
+    POST /api/ratings to update a specific purchase’s rating and comment.
+
+
+AIRLINE STAFF use cases
+1. View Flights
+    routes/flights.py → list_flights() shows all flights (future/past) for the staff’s airline over the next 30 days, with filters.
+
+2. Create New Flights
+    routes/flights.py → create_flight() inserts a new flight; enforced to current_user.role=='staff' and matching employer_name.
+
+3. Change Status of Flights
+    routes/flights.py → update_status() updates the status field (validated against constant.valid_status).
+
+4. Add Airplane
+routes/airplanes.py → add_airplane() inserts into Airplane, guarded by staff-only and matching owner_name.
+
+5. Add New Airport
+    routes/airports.py → create_airport() inserts into airport, also staff-only.
+
+6. View Flight Ratings
+    routes/ratings.py → GET /api/ratings can be filtered (or extended) to show average ratings per flight—just add a GROUP BY
+
+
+
+BOTH use cases
+
+1. register
+2. logout
+    routes/auth.py → /api/auth/logout calls logout_user(), clears the session.

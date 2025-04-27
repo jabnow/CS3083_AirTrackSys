@@ -22,7 +22,7 @@ try:
     DB_CONFIG = credentials.DB_CONFIG
 except ImportError:
     DB_CONFIG = {
-        'host':     os.getenv('MYSQL_HOST', 'localhost'),
+        'host':     os.getenv('MYSQL_HOST', 'localhost'),   # 127.0.0.1
         'user':     os.getenv('MYSQL_USER', 'root'),
         'password': os.getenv('MYSQL_PASSWORD', ''),
         'database': os.getenv('MYSQL_DB', 'air_traffic_reservation_system')

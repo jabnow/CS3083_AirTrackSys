@@ -2,7 +2,8 @@
 # login
 # user
 # the staff
-from flask import Blueprint, request, jsonify, make_response, escape
+from flask import Blueprint, request, jsonify, make_response
+from markupsafe import escape
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required, current_user
 from datetime import datetime
