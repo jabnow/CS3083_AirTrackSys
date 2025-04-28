@@ -21,15 +21,17 @@ from routes.flights   import flights_api
 from routes.purchases   import purchases_api
 from routes.tickets   import tickets_api
 from routes.ratings   import ratings_api
+from routes.reports   import reports_api
 
 app.register_blueprint(airplane_api, url_prefix='/api/airplane')    # written - JW
 app.register_blueprint(airports_api, url_prefix='/api/airports')    # written - DZ
 app.register_blueprint(auth_api, url_prefix='/api/auth')            # written - JW
-app.register_blueprint(customer_api, url_prefix='/api/customers')   # started - DZ
-app.register_blueprint(flights_api, url_prefix='/api/flights')      # started - JW
-app.register_blueprint(purchases_api, url_prefix='/api/purchases')  # started - JW
-app.register_blueprint(tickets_api, url_prefix='/api/tickets')      # started - JW
-app.register_blueprint(ratings_api, url_prefix='/api/ratings')      # started - JW
+app.register_blueprint(customer_api, url_prefix='/api/customers')   # written - DZ
+app.register_blueprint(flights_api, url_prefix='/api/flights')      # written - JW
+app.register_blueprint(purchases_api, url_prefix='/api/purchases')  # written - JW
+app.register_blueprint(tickets_api, url_prefix='/api/tickets')      # written - JW
+app.register_blueprint(ratings_api, url_prefix='/api/ratings')      # written - JW
+app.register_blueprint(reports_api, url_prefix='/api/reports')      # started - JW
 
 
 def check_connection():
