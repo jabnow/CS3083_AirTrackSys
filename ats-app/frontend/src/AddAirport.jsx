@@ -1,21 +1,73 @@
 // src/pages/AddAirport.jsx
-import React from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 
+function AddAirport() {
+  const [formData, setFormData] = useState({
+    code: '',
+    name: '',
+    city: '',
+    country: ''
+  });
 
-function create_airport() { /* Backend in airports.py create_airport */
+  const [message, setMessage] = useState('');
+
+  const handleChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('http://localhost:5000/api/airports', formData, {withCredentials: true});
+      console.log(res);
+      setMessage(res.data.msg || 'Airport created successfully!');
+    } catch (err) {
+      const errMsg = err.response?.data?.msg || err.response?.data?.error || 'Submission failed';
+      setMessage(errMsg);
+    }
+  };
+
   return (
-    <div className="add-airport-container">
-      <h2>Add New Airport</h2>
-      {/* Future: Form for staff to add a new airport */}
-      <form method = "POST" action = "/api/airports/">
-        <input type="text" placeholder="Airport Code" required />
-        <input type="text" placeholder="Airport Name" required />
-        <input type="text" placeholder="City" required />
-        <input type="text" placeholder="Country" required />
-        <button type="submit">Add Airport</button>
+    <div className="add-airport-container max-w-md mx-auto p-6 bg-white shadow rounded">
+      <h2 className="text-2xl font-semibold mb-4 text-center">Add New Airport</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input type="text" name="code" placeholder="Airport Code (e.g. JFK)" value={formData.code} onChange={handleChange} required className="input" />
+        <input type="text" name="name" placeholder="Airport Name" value={formData.name} onChange={handleChange} required className="input" />
+        <input type="text" name="city" placeholder="City" value={formData.city} onChange={handleChange} required className="input" />
+        <input type="text" name="country" placeholder="Country" value={formData.country} onChange={handleChange} required className="input" />
+        
+        <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          Submit
+        </button>
       </form>
+      {message && <p className="mt-3 text-center text-red-600">{message}</p>}
     </div>
   );
 }
 
-export default create_airport;
+export default AddAirport;
+
+// src/pages/AddAirport.jsx
+// import React from 'react';
+
+// function create_airport() { /* Backend in airports.py create_airport */
+//   return (
+//     <div className="add-airport-container">
+//       <h2>Add New Airport</h2>
+//       {/* Future: Form for staff to add a new airport */}
+//       <form method = "POST" action = "/api/airports/">
+//         <input type="text" placeholder="Airport Code" required />
+//         <input type="text" placeholder="Airport Name" required />
+//         <input type="text" placeholder="City" required />
+//         <input type="text" placeholder="Country" required />
+//         <button type="submit">Add Airport</button>
+//       </form>
+//     </div>
+//   );
+// }
+
+// export default create_airport;

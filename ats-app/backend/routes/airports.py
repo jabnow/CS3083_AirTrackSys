@@ -10,14 +10,14 @@ airports_api = Blueprint('airports_api', __name__, url_prefix='/api/airports')
 @airports_api.route('/', methods=['POST'])
 # @login_required
 def create_airport():  
-    print("create_airport running")
+    # print("create_airport running")
     # authorization check - only staff can create airports - JW
     # if getattr(current_user, 'role', None) != 'staff':
     #     return jsonify({'msg': 'Staff Only'}), 403
     
     # ok now go
     try:
-        body = utility.convert_Body(
+        body = utility.convertBody(
             json.loads(request.data.decode('utf-8')),
             {
                 'code': 'code',
@@ -41,7 +41,7 @@ def create_airport():
                 code,
                 name,
                 city,
-                country,
+                country
             ) VALUES (
                 %(code)s,
                 %(name)s,
