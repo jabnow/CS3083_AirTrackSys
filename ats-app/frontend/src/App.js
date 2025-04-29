@@ -16,8 +16,8 @@ import CreateFlight from './CreateFlight';
 import ChangeFlightStatus from './ChangeFlightStatus';
 import AddAirplane from './AddAirplane';
 import AddAirport from './AddAirport';
-import FlightRatings from './FlightRatings';
 import Reports from './Reports';
+import ViewFlightRatings from './ViewFlightRatings';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -43,7 +43,7 @@ function App() {
         <Route path="/change-flight-status" element={<ChangeFlightStatus />} />
         <Route path="/add-airplane" element={<AddAirplane />} />
         <Route path="/add-airport" element={<AddAirport />} />
-        <Route path="/flight-ratings" element={<FlightRatings />} />
+        <Route path="/flight-ratings" element={<ViewFlightRatings />} />
         <Route path="/reports" element={<Reports />} />
 
       </Routes>
