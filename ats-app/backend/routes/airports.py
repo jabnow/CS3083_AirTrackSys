@@ -8,12 +8,12 @@ from config import Config
 airports_api = Blueprint('airports_api', __name__, url_prefix='/api/airports')
 
 @airports_api.route('/', methods=['POST'])
-@login_required
-# I guess this is a use case that airline staff are supposed to have - DZ
+# @login_required
 def create_airport():  
+    print("create_airport running")
     # authorization check - only staff can create airports - JW
-    if getattr(current_user, 'role', None) != 'staff':
-        return jsonify({'msg': 'Staff Only'}), 403
+    # if getattr(current_user, 'role', None) != 'staff':
+    #     return jsonify({'msg': 'Staff Only'}), 403
     
     # ok now go
     try:
