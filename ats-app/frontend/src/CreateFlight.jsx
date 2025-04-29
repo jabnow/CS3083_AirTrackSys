@@ -6,7 +6,7 @@ function create_flight() { /* Backend in flights.py create_flight */
     <div className="create-flight-container">
       <h2>Create New Flight</h2>
       {/* Future: Form for staff to add a new flight */}
-      <form> 
+      <form method = "POST" action = "/api/flights/"> 
         <input type="text" name="airline_name" placeholder="Airline Name" required />
         <input type="text" name="flight_number" placeholder="Flight Number" required />
         /* Add a default value to this to be the airline_name? */
