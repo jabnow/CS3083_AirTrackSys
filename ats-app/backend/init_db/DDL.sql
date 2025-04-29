@@ -68,8 +68,8 @@ CREATE TABLE IF NOT EXISTS Flight (
     status ENUM(
         'On-Time', 
         'Delayed', 
-        -- 'Arrived', 
-        -- 'Boarding', 
+        'Arrived', 
+        'Boarding', 
         'Cancelled'
         ) NOT NULL,
     -- CONSTRAINT
