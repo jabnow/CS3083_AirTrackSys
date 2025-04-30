@@ -7,34 +7,26 @@ import json
 from db import getdb
 from config import Config
 
-purchases_api = Blueprint('purchases_api', __name__, url_prefix='/api/purchases')
-
-@purchases_api.route('/', methods=['GET'])
-@login_required
-def my_purchases():
-    return jsonify(Purchases.get_by_customer(current_user.id))
+purchases_api = Blueprint('payment_info_api', __name__, url_prefix='/api/payment_info')
 
 @purchases_api.route('/', methods=['POST'])
 @login_required
-def make_purchase():
+def add_payment_info():
 
     if getattr(current_user, 'role', None) != 'customer':
         return jsonify({'msg': 'Registered Customers Only'}), 403
-
-    # ok now go
+    
     try:
         body = utility.convertBody(
             json.loads(request.data.decode('utf-8')),
             {
-                'email': 'email',
-                'ticket_id': 'ticket_id',
                 'card_number': 'card_number',
-                'comment': 'comment',
-                'rating': 'rating',
-                'purchase_timestamp': 'purchase_timestamp',
+                'card_type': 'card_type',
+                'card_expiration_date': 'card_expiration_date',
+                'name_on_card': 'name_on_card',
             }
         )
-    except Exception as e:
+    except Exception as e:  
         return jsonify({'error': str(e)}), 400
     if body is False:
         return jsonify({'msg': 'missing field'}), 422
@@ -45,31 +37,26 @@ def make_purchase():
     try:
         cursor.execute(
             '''
-            INSERT INTO Purchases(
-                email,
-                ticket_id,
+            INSERT INTO PaymentInfo(
                 card_number,
-                comment,
-                rating,
-                purchase_timestamp
+                card_type,
+                card_expiration_date,
+                name_on_card
             ) VALUES (
-                %(email)s,
-                %(ticket_id)s,
                 %(card_number)s,
-                %(comment)s,
-                %(rating)s,
-                %(purchase_timestamp)s
+                %(card_type)s,
+                %(card_expiration_date)s,
+                %(name_on_card)s
             )
             ''',
             body,
         )
         connection.commit()
-    except: 
+    except:
         connection.rollback()
         cursor.close()
         connection.close()
         return jsonify({'msg': 'invalid field or duplicate key'}), 409
     cursor.close()
     connection.close()
-    return jsonify({'msg': 'purchase created successfully'}), 201
-# test
+    return jsonify({'msg': 'Payment info added successfully'}), 201
