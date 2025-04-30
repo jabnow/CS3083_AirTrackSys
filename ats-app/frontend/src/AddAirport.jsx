@@ -1,66 +1,76 @@
 // src/pages/AddAirport.jsx
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react'
+import { airports } from './services'
 
-<<<<<<< HEAD
-function AddAirport() {
-  const [formData, setFormData] = useState({
-    code: '',
-    name: '',
-    city: '',
-    country: ''
-  });
+export default function AddAirport() {
+  const [code, setCode] = useState('')
+  const [name, setName] = useState('')
+  const [city, setCity] = useState('')
+  const [country, setCountry] = useState('')
+  const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(false)
 
-  const [message, setMessage] = useState('');
+  const handleSubmit = async e => {
+    e.preventDefault()
+    setError(null)
+    setSuccess(false)
 
-  const handleChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
     try {
-      const res = await axios.post('/api/airports/', formData, { withCredentials: true });
-      setMessage(res.data.msg || 'Airport created successfully!');
+      await airports.create({ code, name, city, country })
+      setSuccess(true)
+      // clear fields
+      setCode(''); setName(''); setCity(''); setCountry('')
     } catch (err) {
-      const errMsg = err.response?.data?.msg || err.response?.data?.error || 'Submission failed';
-      setMessage(errMsg);
+      setError(err.message)
     }
-  };
+  }
 
-  return (
-    <div className="add-airport-container max-w-md mx-auto p-6 bg-white shadow rounded">
-      <h2 className="text-2xl font-semibold mb-4 text-center">Add New Airport</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input type="text" name="code" placeholder="Airport Code (e.g. JFK)" value={formData.code} onChange={handleChange} required className="input" />
-        <input type="text" name="name" placeholder="Airport Name" value={formData.name} onChange={handleChange} required className="input" />
-        <input type="text" name="city" placeholder="City" value={formData.city} onChange={handleChange} required className="input" />
-        <input type="text" name="country" placeholder="Country" value={formData.country} onChange={handleChange} required className="input" />
-        
-        <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-          Submit
-        </button>
-      </form>
-      {message && <p className="mt-3 text-center text-red-600">{message}</p>}
-=======
-function create_airport() { /* Backend in airports.py create_airport */
   return (
     <div className="add-airport-container">
       <h2>Add New Airport</h2>
-      {/* Future: Form for staff to add a new airport */}
-      <form method = "POST" action = "/api/airports/">
-        <input type="text" placeholder="Airport Code" required />
-        <input type="text" placeholder="Airport Name" required />
-        <input type="text" placeholder="City" required />
-        <input type="text" placeholder="Country" required />
+
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Airport Code"
+          value={code}
+          onChange={e => setCode(e.target.value.toUpperCase())}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Airport Name"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="City"
+          value={city}
+          onChange={e => setCity(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Country"
+          value={country}
+          onChange={e => setCountry(e.target.value)}
+          required
+        />
         <button type="submit">Add Airport</button>
       </form>
->>>>>>> 9d68c9c9d7420b59838a4c55c2d05212cacccf5d
-    </div>
-  );
-}
 
-export default create_airport;
+      {success && (
+        <div className="success">
+          Airport <strong>{code}</strong> added successfully!
+        </div>
+      )}
+      {error && (
+        <div className="error">
+          Error: {error}
+        </div>
+      )}
+    </div>
+  )
+}

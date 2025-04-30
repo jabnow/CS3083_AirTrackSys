@@ -1,34 +1,36 @@
 // src/pages/ChangeFlightStatus.jsx
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react'
+import { flights } from './services'
 
-function ChangeFlightStatus() {
-  const [formData, setFormData] = useState({
-    airline_name: '',
-    flight_number: '',
-    departure_timestamp: '',
-    status: ''
-  });
+export default function ChangeFlightStatus() {
+  const [airlineName, setAirlineName] = useState('')
+  const [flightNumber, setFlightNumber] = useState('')
+  const [departureTimestamp, setDepartureTimestamp] = useState('')
+  const [status, setStatus] = useState('')
+  const [message, setMessage] = useState('')
+  const [msgType, setMsgType] = useState('') 
 
-  const [message, setMessage] = useState('');
+  const handleSubmit = async e => {
+    e.preventDefault()
+    setMessage('')
+    setMsgType('')
 
-  const handleChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
     try {
-      const res = await axios.post('/api/flights/status', formData, { withCredentials: true });
-      setMessage(res.data.msg || 'Status updated successfully!');
+      await flights.updateStatus({
+        airline_name: airlineName,
+        flight_number: flightNumber,
+        departure_timestamp: departureTimestamp,
+        status
+      })
+      setMessage('Status updated successfully!')
+      setMsgType('success')
+      // or clear only the status field
+      setStatus('')
     } catch (err) {
-      const errMsg = err.response?.data?.msg || err.response?.data?.error || 'Update failed';
-      setMessage(errMsg);
+      setMessage(err.message)
+      setMsgType('error')
     }
-  };
+  }
 
   return (
     <div className="change-flight-status-container max-w-lg mx-auto p-6 bg-white shadow rounded">
@@ -36,36 +38,33 @@ function ChangeFlightStatus() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
-          name="airline_name"
           placeholder="Airline Name"
-          value={formData.airline_name}
-          onChange={handleChange}
+          value={airlineName}
+          onChange={e => setAirlineName(e.target.value)}
           required
-          className="input"
+          className="input w-full"
         />
         <input
           type="text"
-          name="flight_number"
           placeholder="Flight Number"
-          value={formData.flight_number}
-          onChange={handleChange}
+          value={flightNumber}
+          onChange={e => setFlightNumber(e.target.value)}
           required
-          className="input"
+          className="input w-full"
         />
+        <label>Departure Time:</label>
         <input
           type="datetime-local"
-          name="departure_timestamp"
-          value={formData.departure_timestamp}
-          onChange={handleChange}
+          value={departureTimestamp}
+          onChange={e => setDepartureTimestamp(e.target.value)}
           required
-          className="input"
+          className="input w-full"
         />
         <select
-          name="status"
-          value={formData.status}
-          onChange={handleChange}
+          value={status}
+          onChange={e => setStatus(e.target.value)}
           required
-          className="input"
+          className="input w-full"
         >
           <option value="">Select Status</option>
           <option value="scheduled">Scheduled</option>
@@ -74,14 +73,18 @@ function ChangeFlightStatus() {
           <option value="departed">Departed</option>
           <option value="arrived">Arrived</option>
         </select>
-
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
+        >
           Update Status
         </button>
       </form>
-      {message && <p className="mt-3 text-center text-red-600">{message}</p>}
+      {message && (
+        <p className={msgType === 'error' ? 'text-red-600 mt-3 text-center' : 'text-green-600 mt-3 text-center'}>
+          {message}
+        </p>
+      )}
     </div>
-  );
+  )
 }
-
-export default ChangeFlightStatus;

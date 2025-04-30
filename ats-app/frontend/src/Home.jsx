@@ -1,14 +1,35 @@
 // src/pages/Home.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PlaneImage from './components/plane.jpeg';
 import axios from 'axios';
 
-function Home() {
+export default function Home() {
   const [roundTrip, setRoundTrip] = useState(false);
   const [source, setSource] = useState('');
   const [destination, setDestination] = useState('');
   const [departureDate, setDepartureDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
+  const [flightResults, setFlightResults] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    // Load all future flights on mount
+    async function loadAll() {
+      setLoading(true)
+      setError('')
+      try {
+        const res = await axios.get('/api/flights/future', { withCredentials: true })
+        setFlightResults(res.data.flights_to || [])
+        setFlightResults(res.flights_to || [])
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadAll()
+  }, [])
 
   const handleCheckboxChange = (e) => {
     setRoundTrip(e.target.checked);
@@ -16,12 +37,14 @@ function Home() {
 
   const handleSearchFlights = async (e) => {
     e.preventDefault();
+    setLoading(true)
+    setError('')
     try {
-      const response = await axios.post('/api/search-flights', {
+      const response = await axios.post('/api/flights/future', {
         source,
         destination,
         departureDate,
-        returnDate: roundTrip ? returnDate : null,
+        returnDate: roundTrip ? returnDate : null,  
       });
       console.log(response.data);
       // Handle response data (e.g., display flights)
@@ -51,42 +74,84 @@ function Home() {
       </style>
 
       <div className="home-container">
-        <div className="home-banner">
-          <img src={PlaneImage} alt="Airplane" className="plane-image" />
-          <div className="home-text">
-            <h1 className="home-title">Welcome to Air Ticket Reservation System</h1>
-            <p className="home-subtitle">Book your flights with ease and comfort.</p>
-          </div>
-        </div>
-
-        <div className="search-flights-box">
-          <h2 className="search-flights-title">Find Your Perfect Flight</h2>
-          <form className="search-flights-form" onSubmit={handleSearchFlights}>
-            <div className="search-inputs">
-              <input type="text" placeholder="Source City or Airport" className="search-input" value={source} onChange={(e) => setSource(e.target.value)} />
-              <input type="text" placeholder="Destination City or Airport" className="search-input" value={destination} onChange={(e) => setDestination(e.target.value)} />
-            </div>
-            <div className="search-inputs">
-              <input type="date" className="search-input" value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} />
-              {roundTrip && (
-                <input type="date" className="search-input" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} />
-              )}
-            </div>
-            <div className="checkbox-roundtrip">
-              <input
-                type="checkbox"
-                id="roundTrip"
-                checked={roundTrip}
-                onChange={handleCheckboxChange}
-              />
-              <label htmlFor="roundTrip">Round Trip</label>
-            </div>
-            <button type="submit" className="search-button">Search Flights</button>
-          </form>
+      {/* Banner */}
+      <div className="home-banner">
+        <img src={PlaneImage} alt="Airplane" className="plane-image" />
+        <div className="home-text">
+          <h1 className="home-title">Welcome to Air Ticket Reservation System</h1>
+          <p className="home-subtitle">Book your flights with ease and comfort.</p>
         </div>
       </div>
+
+      {/* Search Form */}
+      <div className="search-flights-box">
+        <h2 className="search-flights-title">Find Your Perfect Flight</h2>
+        <form className="search-flights-form" onSubmit={handleSearchFlights}>
+          <div className="search-inputs">
+            <input
+              type="text"
+              placeholder="Source City or Airport"
+              className="search-input"
+              value={source}
+              onChange={e => setSource(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Destination City or Airport"
+              className="search-input"
+              value={destination}
+              onChange={e => setDestination(e.target.value)}
+            />
+          </div>
+          <div className="search-inputs">
+            <input
+              type="date"
+              className="search-input"
+              value={departureDate}
+              onChange={e => setDepartureDate(e.target.value)}
+            />
+            {roundTrip && (
+              <input
+                type="date"
+                className="search-input"
+                value={returnDate}
+                onChange={e => setReturnDate(e.target.value)}
+              />
+            )}
+          </div>
+          <div className="checkbox-roundtrip">
+            <input
+              type="checkbox"
+              id="roundTrip"
+              checked={roundTrip}
+              onChange={handleCheckboxChange}
+            />
+            <label htmlFor="roundTrip">Round Trip</label>
+          </div>
+          <button type="submit" className="search-button">Search Flights</button>
+        </form>
+      </div>
+
+      {/* Results List, well crap, I can't make this work */}
+      <div className="results-container max-w-3xl mx-auto mt-8">
+        {loading && <p>Loading flights...</p>}
+        {error && <p className="text-red-600">Error: {error}</p>}
+        {!loading && !error && (
+          <ul className="space-y-4">
+            {flightResults.map(f => (
+              <li key={`${f.airline_name}-${f.flight_number}-${f.departure_date_time}`} className="border p-4 rounded">
+                <div><strong>{f.airline_name} {f.flight_number}</strong></div>
+                <div>Departure: {new Date(f.departure_date_time).toLocaleString()}</div>
+                <div>From: {f.departure_airport_code} → To: {f.arrival_airport_code}</div>
+                <div>Price: ${f.base_price.toFixed(2)}</div>
+                <div>Status: {f.status}</div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+      {/* list of search results dsiplayed below */}
     </>
   );
 }
-
-export default Home;
