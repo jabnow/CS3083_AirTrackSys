@@ -19,7 +19,8 @@ export default function Home() {
       setLoading(true)
       setError('')
       try {
-        const res = await axios.get('/api/flights/future', { withCredentials: true })
+        const today = new Date().toISOString().slice(0, 10)
+        const res = await axios.get('/api/flights/future', { params: { departure_date: today }, withCredentials: true })
         setFlightResults(res.data.flights_to || [])
         setFlightResults(res.flights_to || [])
       } catch (err) {
@@ -40,11 +41,16 @@ export default function Home() {
     setLoading(true)
     setError('')
     try {
-      const response = await axios.post('/api/flights/future', {
-        source,
-        destination,
-        departureDate,
-        returnDate: roundTrip ? returnDate : null,  
+      const response = await axios.get('/api/flights/future', {
+        params: {
+          source_city: source,
+          source_airport: source,
+          destination_city: destination,
+          destination_airport: destination,
+          departure_date: departureDate,
+          return_date: roundTrip ? returnDate : undefined
+        },
+        withCredentials: true
       });
       console.log(response.data);
       // Handle response data (e.g., display flights)
