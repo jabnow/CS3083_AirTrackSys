@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+<<<<<<< HEAD
 function AddAirport() {
   const [formData, setFormData] = useState({
     code: '',
@@ -44,8 +45,22 @@ function AddAirport() {
         </button>
       </form>
       {message && <p className="mt-3 text-center text-red-600">{message}</p>}
+=======
+function create_airport() { /* Backend in airports.py create_airport */
+  return (
+    <div className="add-airport-container">
+      <h2>Add New Airport</h2>
+      {/* Future: Form for staff to add a new airport */}
+      <form method = "POST" action = "/api/airports/">
+        <input type="text" placeholder="Airport Code" required />
+        <input type="text" placeholder="Airport Name" required />
+        <input type="text" placeholder="City" required />
+        <input type="text" placeholder="Country" required />
+        <button type="submit">Add Airport</button>
+      </form>
+>>>>>>> 9d68c9c9d7420b59838a4c55c2d05212cacccf5d
     </div>
   );
 }
 
-export default AddAirport;
+export default create_airport;

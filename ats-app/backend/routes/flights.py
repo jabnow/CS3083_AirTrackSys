@@ -104,12 +104,14 @@ def create_flight():
             {
                 'airline_name': 'airline_name',
                 'flight_number': 'flight_number',
+                'operating_airline_name': 'operating_airline_name',
+                'airplane_ID': 'airplane_ID',
                 'departure_timestamp': 'departure_timestamp',
+                'arrival_airport_code': 'arrival_airport_code',
                 'departure_airport_code': 'departure_airport_code',
                 'arrival_timestamp': 'arrival_timestamp',
-                'arrival_airport_code': 'arrival_airport_code',
                 'base_price': 'base_price',
-                'airplane_ID': 'airplane_ID'
+                'status': 'status'
             },
             auto_date=True
         )
