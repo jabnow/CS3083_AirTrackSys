@@ -1,4 +1,4 @@
-import pytest
+# import pytest
 from backend.db import getdb
 
 # check if connection can be made to MYSQL

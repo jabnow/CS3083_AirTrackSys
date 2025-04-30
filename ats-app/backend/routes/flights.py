@@ -104,12 +104,14 @@ def create_flight():
             {
                 'airline_name': 'airline_name',
                 'flight_number': 'flight_number',
+                'operating_airline_name': 'operating_airline_name',
+                'airplane_ID': 'airplane_ID',
                 'departure_timestamp': 'departure_timestamp',
+                'arrival_airport_code': 'arrival_airport_code',
                 'departure_airport_code': 'departure_airport_code',
                 'arrival_timestamp': 'arrival_timestamp',
-                'arrival_airport_code': 'arrival_airport_code',
                 'base_price': 'base_price',
-                'airplane_ID': 'airplane_ID'
+                'status': 'status'
             },
             auto_date=True
         )
@@ -349,3 +351,37 @@ def schedule():
             })
         return jsonify({'flights': flights}), 200
     abort(501)  # rip
+
+
+# note to self: or QUESTIONS FOR DEY 4/27
+    """
+    1. by default show the future flights for customer
+    customer can also see their past reviews / comments on past flights
+    staff can see all flights for their airline, including past ones
+    
+    2. do i need to add a filter function for flights? what does "multiple views mean"??
+    customers can also see other ratings and comments for flights (public or their own?? or only staff can see it also??)
+    - only customer themselves and staff can see the reviews?
+    
+    3. staff can see their future flights up to 30 days by default, show by employer, airline
+    
+    4. what is pID referring to? the customer username?
+    what flask examples?? is that in brightspace??
+    i've just been generating random passkeys for each session bruhh
+    
+    5. sql injection protection & normalization stuff
+    which files do i need to be careful about this?
+    idk ask more about what this instruction means (hi prof, please be more specific & give example if possible ASAP)
+    
+    6. what should a user dashboard look like? have a navbar with all the functions?
+    what should a staff dashboard look like? can he (prof ratan) draw us a mockup or diagram somehow lol
+    oh yeah how should user purchase tickets - does he want a separate page for each action (navbar) or just reload the components
+    
+    
+    7. [HELP AHH] VIEW REPORTS - STAFF ONLY (I DIDN'T DO THIS YET AHHH - JW)
+    . View reports: Total amounts of ticket sold based on range of dates/last year/last month etc. 
+    . Month-wise tickets sold in a bar chart/table. 
+    Question: is this for unique sold, the purchase date or the flight date?
+    How to: Count entries in ticket table based on last year, last month
+    can we just ask prof how to do this and where to put this
+    """
