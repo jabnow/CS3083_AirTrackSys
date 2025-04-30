@@ -5,6 +5,8 @@ from db import getdb
 import utility
 from datetime import datetime
 # from ..constant import valid_status
+from flask import current_app
+
 
 # Blueprint for flight management
 flights_api = Blueprint('flights_api', __name__, url_prefix='/api/flights')
@@ -188,57 +190,105 @@ def update_status():
     conn.commit(); cur.close(); conn.close()
     return jsonify({'msg':'status updated'}),202
 
+
+
 @flights_api.route('/future', methods=['GET'])
 def future_flights():
     """
     Public: search future flights (one-way/round-trip)
-    Query params: same as list + departure_date + return_date?
+    Query params: source_airport, destination_airport, departure_date (optional)
+    If no filters are given, return ALL future flights.
     """
+    print("✅ Reached /future route")
+
     params = utility.convertParams(
         request.args,
         {
-            'source_city?':'source_city','source_airport?':'source_airport',
-            'destination_city?':'destination_city','destination_airport?':'destination_airport',
-            'departure_date':'departure_date','return_date?':'return_date'
+            'source_city?': 'source_city',
+            'source_airport?': 'source_airport',
+            'destination_city?': 'destination_city',
+            'destination_airport?': 'destination_airport',
+            'departure_date?': 'departure_date',
+            'return_date?': 'return_date'
         },
         auto_date=True
     )
+
     if params is False:
-        return jsonify({'msg':'missing field'}),422
-    # Ensure source and destination provided
-    if not (params.get('source_city') or params.get('source_airport')) or not (params.get('destination_city') or params.get('destination_airport')):
-        return jsonify({'msg':'missing field'}),422
-    # Filter outbound
-    out_sel = utility.createSqlQuery([
-        {'name':'source_city','selector':'dep.city=%s'},
-        {'name':'source_airport','selector':'f.departure_airport_code=%s'},
-        {'name':'destination_city','selector':'arr.city=%s'},
-        {'name':'destination_airport','selector':'f.arrival_airport_code=%s'},
-        {'name':'departure_date','selector':'DATE(f.departure_timestamp)=%s'}
-    ],params)
+        return jsonify({'msg': 'missing field'}), 422
+
+    # Normalize any date fields to string
+    for date_key in ['departure_date', 'return_date']:
+        if date_key in params and isinstance(params[date_key], datetime):
+            params[date_key] = params[date_key].date().isoformat()
+
+    print("🛬 Parsed query params:", params)
+
     now = datetime.now()
-    conn = getdb(); cur = conn.cursor(dictionary=True)
-    cur.execute(f"SELECT * FROM flight f JOIN airplane a ON a.airplane_ID=f.airplane_ID AND a.owner_name=f.airline_name"
-                " JOIN airport dep ON dep.code=f.departure_airport_code JOIN airport arr ON arr.code=f.arrival_airport_code"
-                " WHERE f.departure_timestamp>=%s {out_sel}", tuple([now]+list(params.values())))
-    out = cur.fetchall()
-    response = {'flights_to': out}
-    
-    # Round-trip if requested
-    if params.get('return_date'):
-        back_sel = utility.createSqlQuery([
-            {'name':'destination_city','selector':'dep.city=%s'},
-            {'name':'destination_airport','selector':'f.departure_airport_code=%s'},
-            {'name':'source_city','selector':'arr.city=%s'},
-            {'name':'source_airport','selector':'f.arrival_airport_code=%s'},
-            {'name':'return_date','selector':'DATE(f.departure_timestamp)=%s'}
-        ], params)
-        cur.execute(f"SELECT * FROM flight f JOIN airplane a ON a.airplane_ID=f.airplane_ID AND a.owner_name=f.airline_name"
-                    " JOIN airport dep ON dep.code=f.departure_airport_code JOIN airport arr ON arr.code=f.arrival_airport_code"
-                    " WHERE f.departure_timestamp>=%s {back_sel}", tuple([now]+list(params.values())))
+    conn = getdb()
+    cur = conn.cursor(dictionary=True)
+
+    # ✈️ OUTBOUND QUERY: always filter by future timestamp
+    out_sel = " WHERE f.departure_timestamp >= %s"
+    out_vals = [now]
+
+    if 'source_airport' in params:
+        out_sel += " AND f.departure_airport_code = %s"
+        out_vals.append(params['source_airport'])
+
+    if 'destination_airport' in params:
+        out_sel += " AND f.arrival_airport_code = %s"
+        out_vals.append(params['destination_airport'])
+
+    if 'departure_date' in params:
+        out_sel += " AND DATE(f.departure_timestamp) = %s"
+        out_vals.append(params['departure_date'])
+
+    print("🧪 Outbound SQL:", out_sel)
+    print("🧪 SQL PARAMS:", out_vals)
+
+    cur.execute(f"""
+        SELECT * FROM flight f
+        JOIN airplane a ON a.airplane_ID = f.airplane_ID AND a.owner_name = f.airline_name
+        JOIN airport dep ON dep.code = f.departure_airport_code
+        JOIN airport arr ON arr.code = f.arrival_airport_code
+        {out_sel}
+    """, tuple(out_vals))
+    response = {'flights_to': cur.fetchall()}
+
+    # ✈️ ROUND-TRIP LOGIC (optional)
+    if 'return_date' in params:
+        back_sel = " WHERE f.departure_timestamp >= %s"
+        back_vals = [now]
+
+        if 'source_airport' in params:
+            back_sel += " AND f.arrival_airport_code = %s"
+            back_vals.append(params['source_airport'])
+
+        if 'destination_airport' in params:
+            back_sel += " AND f.departure_airport_code = %s"
+            back_vals.append(params['destination_airport'])
+
+        back_sel += " AND DATE(f.departure_timestamp) = %s"
+        back_vals.append(params['return_date'])
+
+        print("🧪 Return SQL:", back_sel)
+        print("🧪 Return SQL PARAMS:", back_vals)
+
+        cur.execute(f"""
+            SELECT * FROM flight f
+            JOIN airplane a ON a.airplane_ID = f.airplane_ID AND a.owner_name = f.airline_name
+            JOIN airport dep ON dep.code = f.departure_airport_code
+            JOIN airport arr ON arr.code = f.arrival_airport_code
+            {back_sel}
+        """, tuple(back_vals))
         response['flights_from'] = cur.fetchall()
-    cur.close(); conn.close()
+
+    cur.close()
+    conn.close()
     return jsonify(response), 200
+
+
 
 @flights_api.route('/schedule', methods=['GET'])
 @login_required
