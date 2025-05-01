@@ -32,9 +32,12 @@ export default function PurchaseTicket({ user }) {
 
   // Handle ticket purchase
   const handleSubmit = async (e) => {
+    
     e.preventDefault();
     setError('');
     setSuccess('');
+    console.log("👤 Sending user ID:", user?.id);
+
 
     if (!selectedFlight) {
       setError('Please select a flight');
@@ -45,6 +48,7 @@ export default function PurchaseTicket({ user }) {
     const formattedExpirationDate = expirationDate ? `${expirationDate}-01` : '';
 
     try {
+      
       // Send the purchase request to the backend
       const response = await axios.post('http://127.0.0.1:5000/api/tickets/buy', {
         flight_number: selectedFlight.flight_number,
@@ -54,6 +58,7 @@ export default function PurchaseTicket({ user }) {
         card_type: cardType,
         card_expiration_date: formattedExpirationDate, // Use formatted expiration date
         name_on_card: nameOnCard,
+        customer_id: user.id
       });
 
       setSuccess(`Purchased ticket ${response.data.ticket_ID} for $${response.data.sold_price.toFixed(2)}`);
@@ -127,7 +132,7 @@ export default function PurchaseTicket({ user }) {
         </div>
 
         <div>
-          <label className="block mb-1">Name on Card</label>
+          <label className="block mb-1">Name on Card(Must match purchase name)</label>
           <input
             type="text"
             value={nameOnCard}

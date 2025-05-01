@@ -28,6 +28,7 @@ def my_purchases():
         rows = cur.fetchall()
 
         print(f"✅ Retrieved {len(rows)} rows")
+        print(rows)
         cur.close()
         conn.close()
 

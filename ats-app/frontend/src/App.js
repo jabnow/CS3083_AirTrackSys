@@ -51,8 +51,8 @@ export default function App() {
         <Route path="/customer-dashboard" element={user?.role === 'customer' ? <CustomerDashboard /> : <Navigate to="/login" />} />
         <Route path="/search-flights" element={<SearchFlights />} />
         <Route path="/my-flights" element={<MyFlights user={user} />} />
-        <Route path="/purchase-ticket" element={<PurchaseTicket />} />
-        <Route path="/cancel-trip" element={<CancelTrip />} />
+        <Route path="/purchase-ticket" element={<PurchaseTicket user={user}/>} />
+        <Route path="/cancel-trip" element={<CancelTrip user={user}/>} />
         <Route path="/rate-flight" element={<RateFlight />} />
 
         {/* Staff Routes */}
