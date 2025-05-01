@@ -1,46 +1,64 @@
-// src/pages/Login.jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { auth } from './services'
 
-function Login({ setUser }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
+export default function Login({ setUser }) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
 
-  /*const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async e => {
+    e.preventDefault()
+    setError('')
     if (!email || !password) {
-      setError('Email and password are required');
-      return;
+      setError('Email and password are required')
+      return
     }
-    // Placeholder for API call for login
-    if (email.includes('staff')) {
-      setUser({ role: 'staff' });
-      navigate('/staff-dashboard');
-    } else {
-      setUser({ role: 'customer' });
-      navigate('/customer-dashboard');
+    try {
+      const res = await auth.login({ email, password })
+      // Backend returns { username, type }
+      setUser({ username: res.username, role: res.type })
+      if (res.type === 'staff') {
+        navigate('/staff-dashboard')
+      } else {
+        navigate('/customer-dashboard')
+      }
+    } catch (err) {
+      setError(err.message)
     }
-  };*/
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Temporary fake login
-    setUser({ role: 'customer' }); // or role: 'staff'
-    navigate('/customer-dashboard'); // or '/staff-dashboard'
-  };
+  }
 
   return (
-    <div className="login-container">
-      <h2>Login</h2>
-      {error && <p className="error-msg">{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button type="submit">Login</button>
+    <div className="login-container max-w-md mx-auto p-6 bg-white shadow rounded">
+      <h2 className="text-2xl font-semibold mb-4 text-center">Login</h2>
+      {error && <p className="text-red-600 mb-2 text-center">{error}</p>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          className="input w-full"
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+          className="input w-full"
+        />
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+        >
+          Log In
+        </button>
       </form>
     </div>
-  );
+  )
 }
-
-export default Login;

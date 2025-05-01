@@ -6,7 +6,7 @@ from db import getdb
 
 # Make App
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 app.config.from_object(Config)
 
 
@@ -39,7 +39,7 @@ def check_connection():
         my_connector = _mysql_connector.connect(
             host = "localhost",
             user = "root",      # change with your own settings
-            password = "beans", # change with your own settings
+            password = "", # change with your own settings
             database = "air_traffic_reservation_system",   # change with your own settings
         )
         return True
