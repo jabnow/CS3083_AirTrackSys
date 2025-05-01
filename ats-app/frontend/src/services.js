@@ -48,7 +48,13 @@ export const tickets = {
 }
 
 export const purchases = {
-  list: () => request('/purchases')
+  list: (user) =>
+    request('/purchases', {
+      headers: {
+        'X-User-Id': user?.id,
+        'X-User-Role': user?.role
+      }
+    })
 }
 
 export const ratings = {

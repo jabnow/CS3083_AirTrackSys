@@ -57,19 +57,12 @@ export default function Home() {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get('/api/flights/future', {
-        params: {
-          source_city: source,
-          source_airport: source,
-          destination_city: destination,
-          destination_airport: destination,
-          departure_date: departureDate,
-          return_date: roundTrip ? returnDate : undefined
-        },
-        withCredentials: true
-      }); 
-      console.log(response.data);
-      // Handle response data (e.g., display flights)
+      const response = await axios.get('http://localhost:5000//api/flights/future', {
+        params: queryParams,
+        withCredentials: false,
+      });
+      console.log(response);
+      setFlightResults(response.data.flights_to || []);
     } catch (error) {
       console.error('Error searching flights:', error);
       setError(error.response?.data?.msg || error.message);

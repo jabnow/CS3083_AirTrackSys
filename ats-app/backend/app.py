@@ -3,36 +3,45 @@ from flask_cors import CORS
 import mysql.connector as _mysql_connector
 from config import Config
 from db import getdb
-from flask import json
+from flask_login import LoginManager
+from routes.auth import User  # ✅ import your User class
 
-# Make App
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+app.secret_key = 'dev' 
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 app.config.from_object(Config)
 
+# ✅ Setup login manager
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'
+login_manager.init_app(app)
 
-# Import and register blueprints
-# Unfinished until the models.py doc is finished
-# Am I missing any? -JW
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User(user_id)
+
+# ✅ Register blueprints
 from routes.airplane import airplane_api
-from routes.airports   import airports_api
-from routes.auth      import auth_api
-from routes.customers   import customer_api
-from routes.flights   import flights_api
-from routes.purchases   import purchases_api
-from routes.tickets   import tickets_api
-from routes.ratings   import ratings_api
-from routes.reports   import reports_api
+from routes.airports import airports_api
+from routes.auth import auth_api
+from routes.customers import customer_api
+from routes.flights import flights_api
+from routes.purchases import purchases_api
+from routes.tickets import tickets_api
+from routes.ratings import ratings_api
+from routes.reports import reports_api
 
-app.register_blueprint(airplane_api, url_prefix='/api/airplane')    # written - JW
-app.register_blueprint(airports_api, url_prefix='/api/airports')    # written - DZ
-app.register_blueprint(auth_api, url_prefix='/api/auth')            # written - JW
-app.register_blueprint(customer_api, url_prefix='/api/customers')   # written - DZ
-app.register_blueprint(flights_api, url_prefix='/api/flights')      # written - JW
-app.register_blueprint(purchases_api, url_prefix='/api/purchases')  # written - JW
-app.register_blueprint(tickets_api, url_prefix='/api/tickets')      # written - JW
-app.register_blueprint(ratings_api, url_prefix='/api/ratings')      # written - JW
-app.register_blueprint(reports_api, url_prefix='/api/reports')      # started - JW
+app.register_blueprint(airplane_api, url_prefix='/api/airplane')
+app.register_blueprint(airports_api, url_prefix='/api/airports')
+app.register_blueprint(auth_api, url_prefix='/api/auth')
+app.register_blueprint(customer_api, url_prefix='/api/customers')
+app.register_blueprint(flights_api, url_prefix='/api/flights')
+app.register_blueprint(purchases_api, url_prefix='/api/purchases')
+app.register_blueprint(tickets_api, url_prefix='/api/tickets')
+app.register_blueprint(ratings_api, url_prefix='/api/ratings')
+app.register_blueprint(reports_api, url_prefix='/api/reports')
+
 
 
 def check_connection():
@@ -50,12 +59,13 @@ def check_connection():
         return False
     
 @app.route('/')
-def index():    
-    is_connected = check_connection()
+def index():
+    is_connected = check_connection()  # <-- add () to call it
     if is_connected:
         return '<h2> Database connection is successful. </h2>'
     else:
-        return '<h2> Database connection failed. </h2>'
+        return '<h2> Database connection failed... :C </h2>'
+
     
 @app.route("/airports")
 def airports():
