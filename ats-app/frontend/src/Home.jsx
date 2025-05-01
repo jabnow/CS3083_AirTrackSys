@@ -57,7 +57,6 @@ export default function Home() {
     setLoading(true);
     setError('');
     try {
-<<<<<<< HEAD
       const response = await axios.get('/api/flights/future', {
         params: {
           source_city: source,
@@ -71,14 +70,6 @@ export default function Home() {
       }); 
       console.log(response.data);
       // Handle response data (e.g., display flights)
-=======
-      const response = await axios.get('http://127.0.0.1:5000/api/flights/future', {
-        params: queryParams,
-        withCredentials: false,
-      });
-      console.log(response);
-      setFlightResults(response.data.flights_to || []);
->>>>>>> 3e872d600fbb8b62fc5ebb84f527b8d4f7684612
     } catch (error) {
       console.error('Error searching flights:', error);
       setError(error.response?.data?.msg || error.message);
