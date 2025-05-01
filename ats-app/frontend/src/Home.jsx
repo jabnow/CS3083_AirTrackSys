@@ -1,7 +1,9 @@
 // src/pages/Home.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import PlaneImage from './components/plane.jpeg';
 import axios from 'axios';
+import { useEffect } from 'react';
+
 
 export default function Home() {
   const [roundTrip, setRoundTrip] = useState(false);
@@ -9,9 +11,9 @@ export default function Home() {
   const [destination, setDestination] = useState('');
   const [departureDate, setDepartureDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
-  const [flightResults, setFlightResults] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [flightResults, setFlightResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     // Load all future flights on mount
@@ -38,9 +40,24 @@ export default function Home() {
 
   const handleSearchFlights = async (e) => {
     e.preventDefault();
-    setLoading(true)
-    setError('')
+    if (!source || !destination || !departureDate) {
+      setError("Please fill in source, destination, and departure date.");
+      return;
+    }
+
+    const queryParams = {
+      source_airport: source,
+      destination_airport: destination,
+      departure_date: departureDate,
+      return_date: roundTrip ? returnDate : undefined,
+    };
+
+    console.log("Requesting /api/flights/future with params:", queryParams);
+
+    setLoading(true);
+    setError('');
     try {
+<<<<<<< HEAD
       const response = await axios.get('/api/flights/future', {
         params: {
           source_city: source,
@@ -54,102 +71,105 @@ export default function Home() {
       }); 
       console.log(response.data);
       // Handle response data (e.g., display flights)
+=======
+      const response = await axios.get('http://127.0.0.1:5000/api/flights/future', {
+        params: queryParams,
+        withCredentials: false,
+      });
+      console.log(response);
+      setFlightResults(response.data.flights_to || []);
+>>>>>>> 3e872d600fbb8b62fc5ebb84f527b8d4f7684612
     } catch (error) {
       console.error('Error searching flights:', error);
+      setError(error.response?.data?.msg || error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <>
-      <style>
-        {`
-          .home-container { display: flex; flex-direction: column; align-items: center; padding: 30px; background: linear-gradient(to bottom right, #f0f8ff, #e6f7ff); min-height: 100vh; }
-          .home-banner { display: flex; align-items: center; justify-content: center; gap: 40px; background-color: #ffffff; padding: 20px 40px; border-radius: 12px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); margin-bottom: 40px; width: 100%; max-width: 1200px; }
-          .plane-image { width: 300px; height: auto; border-radius: 10px; object-fit: cover; }
-          .home-title { font-size: 2.8rem; color: #003366; margin-bottom: 10px; }
-          .home-subtitle { font-size: 1.4rem; color: #336699; }
-          .search-flights-box { background-color: #ffffff; padding: 30px 40px; border-radius: 12px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 800px; text-align: center; }
-          .search-flights-title { font-size: 2rem; color: #004080; margin-bottom: 20px; }
-          .search-flights-form { display: flex; flex-direction: column; gap: 20px; }
-          .search-inputs { display: flex; gap: 20px; justify-content: center; }
-          .search-input { padding: 10px 15px; font-size: 1rem; width: 100%; max-width: 350px; border: 1px solid #ccc; border-radius: 6px; }
-          .search-button { margin-top: 20px; padding: 12px 25px; font-size: 1.1rem; color: #ffffff; background-color: #0077cc; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease; }
-          .search-button:hover { background-color: #005fa3; }
-          .checkbox-roundtrip { display: flex; align-items: center; gap: 10px; justify-content: center; margin-top: 10px; }
-        `}
-      </style>
+  useEffect(() => {
 
-      <div className="home-container">
-      {/* Banner */}
-      <div className="home-banner">
-        <img src={PlaneImage} alt="Airplane" className="plane-image" />
-        <div className="home-text">
-          <h1 className="home-title">Welcome to Air Ticket Reservation System</h1>
-          <p className="home-subtitle">Book your flights with ease and comfort.</p>
+    const fetchAllFutureFlights = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://127.0.0.1:5000/api/flights/future');
+        setFlightResults(response.data.flights_to || []);
+      } catch (err) {
+        console.error('Error fetching default future flights:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchAllFutureFlights();
+  }, []);
+  
+  return (
+    <div style={{ fontFamily: 'Arial, sans-serif', background: '#f4f8fc', minHeight: '100vh', padding: '40px' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        padding: '20px',
+        borderRadius: '12px',
+        marginBottom: '40px',
+        maxWidth: '1000px',
+        margin: 'auto'
+      }}>
+        <img src={PlaneImage} alt="Airplane" style={{ width: '200px', borderRadius: '10px', marginRight: '30px' }} />
+        <div>
+          <h1 style={{ fontSize: '2rem', marginBottom: '10px', color: '#003366' }}>Air Ticket Reservation System</h1>
+          <p style={{ fontSize: '1.1rem', color: '#555' }}>Book your flights with ease and comfort.</p>
         </div>
       </div>
 
-      {/* Search Form */}
-      <div className="search-flights-box">
-        <h2 className="search-flights-title">Find Your Perfect Flight</h2>
-        <form className="search-flights-form" onSubmit={handleSearchFlights}>
-          <div className="search-inputs">
-            <input
-              type="text"
-              placeholder="Source City or Airport"
-              className="search-input"
-              value={source}
+      <div style={{
+        backgroundColor: '#ffffff',
+        padding: '30px',
+        borderRadius: '12px',
+        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
+        maxWidth: '800px',
+        margin: 'auto'
+      }}>
+        <h2 style={{ marginBottom: '20px', color: '#004080' }}>Find Your Perfect Flight</h2>
+        <form onSubmit={handleSearchFlights} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', gap: '20px' }}>
+            <input type="text" placeholder="Source Airport Code (e.g. PVG)" value={source}
               onChange={e => setSource(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Destination City or Airport"
-              className="search-input"
-              value={destination}
+              style={inputStyle} />
+            <input type="text" placeholder="Destination Airport Code (e.g. JFK)" value={destination}
               onChange={e => setDestination(e.target.value)}
-            />
+              style={inputStyle} />
           </div>
-          <div className="search-inputs">
-            <input
-              type="date"
-              className="search-input"
-              value={departureDate}
+          <div style={{ display: 'flex', gap: '20px' }}>
+            <input type="date" value={departureDate}
               onChange={e => setDepartureDate(e.target.value)}
-            />
-            {roundTrip && (
-              <input
-                type="date"
-                className="search-input"
-                value={returnDate}
+              style={inputStyle} />
+            {roundTrip &&
+              <input type="date" value={returnDate}
                 onChange={e => setReturnDate(e.target.value)}
-              />
-            )}
+                style={inputStyle} />}
           </div>
-          <div className="checkbox-roundtrip">
-            <input
-              type="checkbox"
-              id="roundTrip"
-              checked={roundTrip}
-              onChange={handleCheckboxChange}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <input type="checkbox" id="roundTrip" checked={roundTrip} onChange={handleCheckboxChange} />
             <label htmlFor="roundTrip">Round Trip</label>
           </div>
-          <button type="submit" className="search-button">Search Flights</button>
+          <button type="submit" style={buttonStyle}>Search Flights</button>
+          {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
         </form>
       </div>
 
-      {/* Results List, well crap, I can't make this work */}
-      <div className="results-container max-w-3xl mx-auto mt-8">
+      <div style={{ maxWidth: '800px', margin: '40px auto 0' }}>
         {loading && <p>Loading flights...</p>}
-        {error && <p className="text-red-600">Error: {error}</p>}
-        {!loading && !error && (
-          <ul className="space-y-4">
+        {!loading && flightResults.length > 0 && (
+          <ul style={{ listStyle: 'none', padding: 0 }}>
             {flightResults.map(f => (
-              <li key={`${f.airline_name}-${f.flight_number}-${f.departure_date_time}`} className="border p-4 rounded">
-                <div><strong>{f.airline_name} {f.flight_number}</strong></div>
-                <div>Departure: {new Date(f.departure_date_time).toLocaleString()}</div>
+              <li key={`${f.airline_name}-${f.flight_number}-${f.departure_timestamp}`} style={cardStyle}>
+                <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{f.airline_name} {f.flight_number}</div>
+                <div>Departure: {new Date(f.departure_timestamp).toLocaleString()}</div>
                 <div>From: {f.departure_airport_code} → To: {f.arrival_airport_code}</div>
-                <div>Price: ${f.base_price.toFixed(2)}</div>
+                <div>Price: ${parseFloat(f.base_price).toFixed(2)}</div>
                 <div>Status: {f.status}</div>
               </li>
             ))}
@@ -157,7 +177,34 @@ export default function Home() {
         )}
       </div>
     </div>
-      {/* list of search results dsiplayed below */}
-    </>
   );
 }
+
+const inputStyle = {
+  flex: 1,
+  padding: '10px',
+  borderRadius: '6px',
+  border: '1px solid #ccc',
+  fontSize: '1rem',
+  width: '100%'
+};
+
+const buttonStyle = {
+  padding: '12px',
+  fontSize: '1rem',
+  backgroundColor: '#0077cc',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  marginTop: '10px'
+};
+
+const cardStyle = {
+  border: '1px solid #ddd',
+  borderRadius: '10px',
+  padding: '20px',
+  backgroundColor: '#fff',
+  marginBottom: '20px',
+  boxShadow: '0 2px 6px rgba(0,0,0,0.05)'
+};
