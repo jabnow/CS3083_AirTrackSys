@@ -51,7 +51,7 @@ export default function Home() {
           return_date: roundTrip ? returnDate : undefined
         },
         withCredentials: true
-      });
+      }); 
       console.log(response.data);
       // Handle response data (e.g., display flights)
     } catch (error) {
