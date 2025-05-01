@@ -72,7 +72,6 @@ export default function Register({ setUser }) {
           Register
         </button>
       </form>
-      {message && <p className="error-msg">{message}</p>}
     </div>
   )
 }
