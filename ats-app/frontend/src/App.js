@@ -57,12 +57,12 @@ export default function App() {
 
         {/* Staff Routes */}
         <Route path="/staff-dashboard" element={user?.role === 'staff' ? <StaffDashboard /> : <Navigate to="/login" />} />
-        <Route path="/create-flight" element={<CreateFlight />} />
-        <Route path="/change-flight-status" element={<ChangeFlightStatus />} />
-        <Route path="/add-airplane" element={<AddAirplane />} />
-        <Route path="/add-airport" element={<AddAirport />} />
-        <Route path="/flight-ratings" element={<ViewFlightRatings />} />
-        <Route path="/reports" element={<Reports />} />
+        <Route path="/create-flight" element={<CreateFlight  user={user}/>} />
+        <Route path="/change-flight-status" element={<ChangeFlightStatus  user={user}/>} />
+        <Route path="/add-airplane" element={<AddAirplane user={user} />} />
+        <Route path="/add-airport" element={<AddAirport  user={user}/>} />
+        <Route path="/flight-ratings" element={<ViewFlightRatings user={user} />} />
+        <Route path="/reports" element={<Reports user={user} />} />
       </Routes>
     </div>
   );

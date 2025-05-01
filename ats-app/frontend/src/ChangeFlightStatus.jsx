@@ -1,36 +1,40 @@
-// src/pages/ChangeFlightStatus.jsx
-import React, { useState } from 'react'
-import { flights } from './services'
+import React, { useState } from 'react';
+import axios from 'axios';
 
-export default function ChangeFlightStatus() {
-  const [airlineName, setAirlineName] = useState('')
-  const [flightNumber, setFlightNumber] = useState('')
-  const [departureTimestamp, setDepartureTimestamp] = useState('')
-  const [status, setStatus] = useState('')
-  const [message, setMessage] = useState('')
-  const [msgType, setMsgType] = useState('') 
+export default function ChangeFlightStatus({ user }) {
+  const [airlineName, setAirlineName] = useState('');
+  const [flightNumber, setFlightNumber] = useState('');
+  const [departureTimestamp, setDepartureTimestamp] = useState('');
+  const [status, setStatus] = useState('');
+  const [message, setMessage] = useState('');
+  const [msgType, setMsgType] = useState('');
 
-  const handleSubmit = async e => {
-    e.preventDefault()
-    setMessage('')
-    setMsgType('')
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    setMsgType('');
 
     try {
-      await flights.updateStatus({
+      const res = await axios.post('http://127.0.0.1:5000/api/flights/status', {
         airline_name: airlineName,
         flight_number: flightNumber,
         departure_timestamp: departureTimestamp,
-        status
-      })
-      setMessage('Status updated successfully!')
-      setMsgType('success')
-      // or clear only the status field
-      setStatus('')
+        status,
+      }, {
+        headers: {
+          'X-User-Id': user.id,
+          'X-User-Role': user.role,
+        },
+      });
+
+      setMessage(res.data.msg || 'Status updated successfully!');
+      setMsgType('success');
+      setStatus('');
     } catch (err) {
-      setMessage(err.message)
-      setMsgType('error')
+      setMessage(err.response?.data?.msg || err.message);
+      setMsgType('error');
     }
-  }
+  };
 
   return (
     <div className="change-flight-status-container max-w-lg mx-auto p-6 bg-white shadow rounded">
@@ -86,5 +90,5 @@ export default function ChangeFlightStatus() {
         </p>
       )}
     </div>
-  )
+  );
 }

@@ -1,39 +1,54 @@
-import React, { useState } from 'react'
-import { reports } from './services'
+import React, { useState } from 'react';
+import axios from 'axios';
 
-export default function Reports() {
-  const [fromMonth, setFromMonth] = useState('')
-  const [toMonth, setToMonth] = useState('')
-  const [summary, setSummary] = useState([])
-  const [byFlight, setByFlight] = useState([])
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+export default function Reports({ user }) {
+  const [fromMonth, setFromMonth] = useState('');
+  const [toMonth, setToMonth] = useState('');
+  const [summary, setSummary] = useState([]);
+  const [byFlight, setByFlight] = useState([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async e => {
-    e.preventDefault()
-    setError('')
-    setSummary([])
-    setByFlight([])
+    e.preventDefault();
+    setError('');
+    setSummary([]);
+    setByFlight([]);
 
     if (!fromMonth || !toMonth) {
-      setError('Both From and To months are required')
-      return
+      setError('Both From and To months are required');
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
-      // overall tickets sold
-      const sumRes = await reports.ticketsSold(fromMonth, toMonth)
-      setSummary(sumRes.tickets_sold || [])
-      // per-flight breakdown
-      const flightRes = await reports.byFlight(fromMonth, toMonth)
-      setByFlight(flightRes.flights || [])
+      const headers = {
+        'X-User-Id': user.id,
+        'X-User-Role': user.role
+      };
+
+      // Fetch overall tickets sold
+      const sumRes = await axios.get('http://127.0.0.1:5000/api/reports/tickets_sold', {
+        params: { from_month: fromMonth, to_month: toMonth },
+        headers,
+        withCredentials: false
+      });
+      setSummary(sumRes.data.tickets_sold || []);
+
+      // Fetch tickets sold by flight
+      const flightRes = await axios.get('http://127.0.0.1:5000/api/reports/tickets_sold_by_flight', {
+        params: { from_month: fromMonth, to_month: toMonth },
+        headers,
+        withCredentials: false
+      });
+      setByFlight(flightRes.data.flights || []);
     } catch (err) {
-      setError(err.message)
+      console.error("❌ Axios error:", err);
+      setError(err.response?.data?.msg || err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="reports-container max-w-4xl mx-auto p-6 bg-white shadow rounded">
@@ -121,5 +136,5 @@ export default function Reports() {
         </div>
       )}
     </div>
-  )
+  );
 }
