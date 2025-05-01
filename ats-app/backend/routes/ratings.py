@@ -103,3 +103,42 @@ def add_rating():
     return jsonify({'msg': 'rating saved'}), 200
 
 
+@ratings_api.route('/all', methods=['GET'])
+def get_all_flight_ratings():
+    """
+    Staff-only: Return all ratings and comments grouped by flight.
+    Requires 'X-User-Role' header to be 'staff'.
+    """
+
+    print("🛬 Staff is fetching all flight ratings and comments...")
+
+    conn = getdb()
+    cur = conn.cursor(dictionary=True)
+    
+    cur.execute("""
+        SELECT 
+            p.ticket_ID,
+            p.rating,
+            p.comment,
+            p.email,
+            f.flight_number,
+            f.departure_timestamp,
+            f.arrival_airport_code,
+            f.departure_airport_code,
+            f.airline_name
+        FROM purchases p
+        JOIN ticket t ON t.ticket_ID = p.ticket_ID
+        JOIN flight f ON f.flight_number = t.flight_number 
+                      AND f.departure_timestamp = t.departure_timestamp 
+                      AND f.airline_name = t.airline_name
+        WHERE p.rating IS NOT NULL
+        ORDER BY f.flight_number, f.departure_timestamp DESC
+    """)
+    
+    rows = cur.fetchall()
+    print(f"✅ Retrieved {len(rows)} ratings for staff")
+
+    cur.close()
+    conn.close()
+
+    return jsonify({'ratings': rows}), 200

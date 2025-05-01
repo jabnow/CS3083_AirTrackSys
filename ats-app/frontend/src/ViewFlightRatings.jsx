@@ -1,23 +1,28 @@
-// src/pages/ViewFlightRatings.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-function ViewFlightRatings() {
+function ViewFlightRatings({ user }) {
   const [ratings, setRatings] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchRatings = async () => {
       try {
-        const res = await axios.get('/api/ratings/');
-        setRatings(res.data || []);
+        console.log("📡 Fetching ratings for user:", user);
+        const res = await axios.get('http://127.0.0.1:5000/api/ratings/all', {
+ 
+        });
+        console.log("✅ Ratings response:", res);
+        setRatings(res.data.ratings || []);
+
       } catch (err) {
+        console.error("❌ Error fetching ratings:", err);
         setError('Failed to load ratings.');
       }
     };
 
-    fetchRatings();
-  }, []);
+    if (user?.id) fetchRatings();
+  }, [user]);
 
   return (
     <div className="view-flight-ratings-container max-w-4xl mx-auto p-6">
