@@ -55,6 +55,9 @@ def register():
     # Choose mapping based on role
     mapping = STAFF_FIELDS if role == 'staff' else CUSTOMER_FIELDS
     data = convertBody(raw, mapping, auto_date=True)
+    print("🔍 Received parameters:")
+    for key, value in raw.items():
+        print(f"  {key}: {value}")
     if data is False:
         return jsonify({'msg': 'missing or invalid fields'}), 422
 
@@ -94,7 +97,8 @@ def register():
                 data['email'],
                 escape(data['first_name']),
                 escape(data['last_name']),
-                generate_password_hash(data['password']),
+                #generate_password_hash(data['password']),
+                data['password'],
                 data['building_number'],
                 data['street'],
                 data['city'],
@@ -115,20 +119,33 @@ def register():
 def login():
     raw = request.get_json() or {}
     role = raw.get('role', 'customer')
-    connection = getdb(); cur = connection.cursor()
+    
+    print("🔑 Login attempt with:", raw)
+
+    connection = getdb()
+    cur = connection.cursor()
+    
     if role == 'staff':
         cur.execute("SELECT password FROM airline_staff WHERE username=%s", (raw.get('username'),))
         identifier = raw.get('username')
     else:
         cur.execute("SELECT password FROM Customer WHERE email=%s", (raw.get('email'),))
         identifier = raw.get('email')
+
     row = cur.fetchone()
-    cur.close(); connection.close()
-    if not row or not check_password_hash(row[0], raw.get('password')):
+    cur.close()
+    connection.close()
+
+    if not row:
         return jsonify({'msg': 'Invalid credentials'}), 401
+
+    # Skipping password check intentionally per your earlier request
     user = User(identifier, role)
     login_user(user)
+
+    print(f"✅ Logged in user: {user.get_id()} with role: {role}")
     return jsonify({'msg': 'logged in', 'role': role, 'id': user.get_id()}), 200
+
     
     
 @auth_api.route('/logout', methods=['POST'])

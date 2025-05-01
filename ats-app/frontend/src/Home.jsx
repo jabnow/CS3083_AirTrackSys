@@ -36,7 +36,7 @@ export default function Home() {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get('http://127.0.0.1:5000/api/flights/future', {
+      const response = await axios.get('http://localhost:5000//api/flights/future', {
         params: queryParams,
         withCredentials: false,
       });

@@ -1,40 +1,38 @@
-# backend/routes/purchases.py
-from flask import Blueprint, jsonify
-from flask_login import login_required, current_user
+from flask import Blueprint, jsonify, request
 from db import getdb
 
+# 🔧 Define blueprint BEFORE route
 purchases_api = Blueprint('purchases_bp', __name__, url_prefix='/api/purchases')
 
-@purchases_api.route('/', methods=['GET'])
-@login_required
+@purchases_api.route('/my', methods=['GET'])
 def my_purchases():
-    """
-    Returns all tickets the current customer has purchased, including any ratings/comments.
-    """
-    conn = getdb()
-    cur = conn.cursor(dictionary=True)
-    cur.execute(
-        """
-        SELECT
-          p.ticket_ID,
-          t.flight_number,
-          t.departure_timestamp,
-          t.airline_name,
-          t.customer_name,
-          t.sold_price,
-          p.rating,
-          p.comment,
-          p.purchase_timestamp
-        FROM purchases p
-        JOIN ticket t ON t.ticket_ID = p.ticket_ID
-        WHERE p.email = %s
-        ORDER BY p.purchase_timestamp DESC
-        """,
-        (current_user.id,)
-    )
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-    return jsonify({'purchases': rows}), 200
+  
+    print("🔔 /api/purchases endpoint called")
 
-# Note: Use the 'ratings' blueprint to add or update ratings/comments for tickets.
+    try:
+        user_id = request.headers.get('X-User-Id') or request.args.get('id')
+        print("📥 Headers received:", dict(request.headers))
+        print("🧾 Query parameters:", dict(request.args))
+        print("🔍 Extracted user_id:", user_id)
+
+        if not user_id:
+            return jsonify({'msg': 'Missing user id'}), 400
+
+        conn = getdb()
+        cur = conn.cursor(dictionary=True)
+
+        cur.execute(
+            "SELECT * FROM purchases p JOIN ticket t ON p.ticket_ID = t.ticket_ID WHERE p.email = %s",
+            (user_id,)
+        )
+        rows = cur.fetchall()
+
+        print(f"✅ Retrieved {len(rows)} rows")
+        cur.close()
+        conn.close()
+
+        return jsonify({'purchases': rows}), 200
+
+    except Exception as e:
+        print("💥 Exception in /api/purchases:", str(e))
+        return jsonify({'msg': 'Server error', 'error': str(e)}), 500

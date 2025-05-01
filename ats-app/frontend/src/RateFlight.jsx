@@ -1,6 +1,6 @@
-// src/pages/RateFlight.jsx
 import React, { useState } from 'react'
-import { ratings } from './services'
+import axios from 'axios';
+
 
 export default function RateFlight() {
   const [ticketId, setTicketId] = useState('')
@@ -9,28 +9,43 @@ export default function RateFlight() {
   const [message, setMessage] = useState('')
   const [msgType, setMsgType] = useState('') // 'success' or 'error'
 
-  const handleSubmit = async e => {
-    e.preventDefault()
-    setMessage('')
-    setMsgType('')
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    setMsgType('');
+  
+    console.log('🔍 Submit button clicked, sending data:', {
+      ticket_ID: ticketId,
+      rating: parseInt(rating, 10),
+      comment: comment || undefined
+    });
+  
     try {
-      await ratings.create({
+      const payload = {
         ticket_ID: ticketId,
         rating: parseInt(rating, 10),
-        comment: comment || undefined
-      })
-      setMessage('Rating submitted successfully!')
-      setMsgType('success')
-      // clear form
-      setTicketId('')
-      setRating('')
-      setComment('')
+        comment: comment || undefined,
+      };
+      console.log("🚀 Registering user with payload:", payload);
+  
+      // Send the request to the backend
+      const res = await axios.post('http://127.0.0.1:5000/api/ratings/add', payload, );
+      console.log(res);
+      console.log('✅ Rating successfully submitted');
+      setMessage('Rating submitted successfully!');
+      setMsgType('success');
+      
+      // clear form after submission
+      setTicketId('');
+      setRating('');
+      setComment('');
     } catch (err) {
-      setMessage(err.message)
-      setMsgType('error')
+      console.error('❌ Error submitting rating:', err);
+      setMessage(err.response?.data?.msg || err.message);
+      setMsgType('error');
     }
-  }
+  };
+  
 
   return (
     <div className="rate-flight-container max-w-lg mx-auto p-6 bg-white shadow rounded">
