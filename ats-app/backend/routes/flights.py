@@ -155,19 +155,20 @@ def update_status():
     Headers: X-User-Id, X-User-Role
     Body: airline_name, flight_number, departure_timestamp, status
     """
-    valid_status = ["scheduled", "ontime", "delayed", "departed", "arrived"]
+    valid_status = ["Scheduled", "On-Time", "Delayed", "Departed", "Arrived"]
 
     user_id = request.headers.get('X-User-Id')
     user_role = request.headers.get('X-User-Role')
 
-    if not user_id or user_role != 'staff':
-        return jsonify({'msg': 'staff only'}), 403
     
 
     try:
         data = request.get_json() or {}
         airline_name = str(data.get('airline_name', '')).strip()
         flight_number = str(data.get('flight_number', '')).strip()
+        status=str(data.get('status','')).strip()
+
+        print(status)
         # Parse incoming string and extract date part only (YYYY-MM-DD)
         departure_timestamp_raw = str(data.get('departure_timestamp', '')).strip()
         try:
@@ -189,12 +190,15 @@ def update_status():
         print(status)
         print(airline_name)
         print(flight_number)
-        print(departure_timestamp)
+        departure_raw = data.get('departure_timestamp', '')
+        departure_raw = datetime.fromisoformat(departure_raw).strftime('%Y-%m-%d %H:%M:%S')
+        print(departure_raw)
         cur.execute(
-            "UPDATE flight SET status = %s "
-            "WHERE airline_name = %s AND flight_number = %s AND DATE(departure_timestamp) = %s",
-            (status, airline_name, flight_number, departure_timestamp)
+            "UPDATE Flight SET status = %s "
+            "WHERE airline_name = %s AND flight_number = %s AND departure_timestamp = %s",
+            (status, airline_name, flight_number, departure_raw)
         )
+
 
         conn.commit()
     except Exception as e:

@@ -52,6 +52,7 @@ export default function MyFlights({ user }) {
           <ul className="space-y-4">
             {upcoming.map(f => (
               <li key={f.ticket_ID} className="border p-4 rounded">
+                <div>{f.ticket_ID}</div>
                 <div><strong>{f.airline_name} {f.flight_number}</strong></div>
                 <div>Departs: {new Date(f.departure_timestamp).toLocaleString()}</div>
                 <div>Price: ${f.sold_price.toFixed(2)}</div>

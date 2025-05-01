@@ -1,38 +1,32 @@
+// src/pages/ChangeFlightStatus.jsx
 import React, { useState } from 'react';
 import axios from 'axios';
 
-export default function ChangeFlightStatus({ user }) {
-  const [airlineName, setAirlineName] = useState('');
-  const [flightNumber, setFlightNumber] = useState('');
-  const [departureTimestamp, setDepartureTimestamp] = useState('');
-  const [status, setStatus] = useState('');
+function ChangeFlightStatus() {
+  const [formData, setFormData] = useState({
+    airline_name: '',
+    flight_number: '',
+    departure_timestamp: '',
+    status: ''
+  });
+
   const [message, setMessage] = useState('');
-  const [msgType, setMsgType] = useState('');
+
+  const handleChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
-    setMsgType('');
-
     try {
-      const res = await axios.post('http://127.0.0.1:5000/api/flights/status', {
-        airline_name: airlineName,
-        flight_number: flightNumber,
-        departure_timestamp: departureTimestamp,
-        status,
-      }, {
-        headers: {
-          'X-User-Id': user.id,
-          'X-User-Role': user.role,
-        },
-      });
-
+      const res = await axios.post('/api/flights/status', formData, { withCredentials: true });
       setMessage(res.data.msg || 'Status updated successfully!');
-      setMsgType('success');
-      setStatus('');
     } catch (err) {
-      setMessage(err.response?.data?.msg || err.message);
-      setMsgType('error');
+      const errMsg = err.response?.data?.msg || err.response?.data?.error || 'Update failed';
+      setMessage(errMsg);
     }
   };
 
@@ -42,53 +36,52 @@ export default function ChangeFlightStatus({ user }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
+          name="airline_name"
           placeholder="Airline Name"
-          value={airlineName}
-          onChange={e => setAirlineName(e.target.value)}
+          value={formData.airline_name}
+          onChange={handleChange}
           required
-          className="input w-full"
+          className="input"
         />
         <input
           type="text"
+          name="flight_number"
           placeholder="Flight Number"
-          value={flightNumber}
-          onChange={e => setFlightNumber(e.target.value)}
+          value={formData.flight_number}
+          onChange={handleChange}
           required
-          className="input w-full"
+          className="input"
         />
-        <label>Departure Time:</label>
         <input
           type="datetime-local"
-          value={departureTimestamp}
-          onChange={e => setDepartureTimestamp(e.target.value)}
+          name="departure_timestamp"
+          value={formData.departure_timestamp}
+          onChange={handleChange}
           required
-          className="input w-full"
+          className="input"
         />
         <select
-          value={status}
-          onChange={e => setStatus(e.target.value)}
+          name="status"
+          value={formData.status}
+          onChange={handleChange}
           required
-          className="input w-full"
+          className="input"
         >
           <option value="">Select Status</option>
-          <option value="scheduled">Scheduled</option>
-          <option value="ontime">On-Time</option>
-          <option value="delayed">Delayed</option>
-          <option value="departed">Departed</option>
-          <option value="arrived">Arrived</option>
+          <option value="Boarding">Boarding</option>
+          <option value="On-Time">On-Time</option>
+          <option value="Delayed">Delayed</option>
+          <option value="Cancelled">Cancelled</option>
+          <option value="Arrived">Arrived</option>
         </select>
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
-        >
+
+        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
           Update Status
         </button>
       </form>
-      {message && (
-        <p className={msgType === 'error' ? 'text-red-600 mt-3 text-center' : 'text-green-600 mt-3 text-center'}>
-          {message}
-        </p>
-      )}
+      {message && <p className="mt-3 text-center text-red-600">{message}</p>}
     </div>
   );
 }
+
+export default ChangeFlightStatus;
