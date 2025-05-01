@@ -3,6 +3,7 @@ from flask_cors import CORS
 import mysql.connector as _mysql_connector
 from config import Config
 from db import getdb
+from flask import json
 
 # Make App
 app = Flask(__name__)
@@ -40,21 +41,25 @@ def check_connection():
             host = "localhost",
             user = "root",      # change with your own settings
             password = "", # change with your own settings
+            password = "", # change with your own settings
             database = "air_traffic_reservation_system",   # change with your own settings
+            port = 3306,  # change with your own settings
         )
         return True
     except _mysql_connector.Error as e:
         return False
     
 @app.route('/')
-def index():
-    is_connected = check_connection
+def index():    
+    is_connected = check_connection()
     if is_connected:
-        return '<h2> Database connection is successful! :D </h2>'
+        return '<h2> Database connection is successful. </h2>'
     else:
-        return '<h2> Database connection failed... :C </h2>'
+        return '<h2> Database connection failed. </h2>'
     
-    
+@app.route("/airports")
+def airports():
+    return "<h2> Airports </h2>"
     
 # test if the app is running
 # in bash: curl http://localhost:5000/api/health

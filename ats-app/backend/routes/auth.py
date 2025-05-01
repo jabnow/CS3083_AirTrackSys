@@ -129,7 +129,10 @@ def login():
     user = User(identifier, role)
     login_user(user)
     return jsonify({'msg': 'logged in', 'role': role, 'id': user.get_id()}), 200
-    
+
+# @auth_api.unauthorized_handler
+# def unauthorized():
+#     return jsonify({'msg': 'Unauthorized'}), 401    
     
 @auth_api.route('/logout', methods=['POST'])
 @login_required
