@@ -70,12 +70,11 @@ export default function ChangeFlightStatus({ user }) {
           required
           className="input w-full"
         >
-          <option value="">Select Status</option>
-          <option value="scheduled">Scheduled</option>
-          <option value="ontime">On-Time</option>
-          <option value="delayed">Delayed</option>
-          <option value="departed">Departed</option>
-          <option value="arrived">Arrived</option>
+           <option value="On-Time">On-Time</option>
+           <option value="Delayed">Delayed</option>
+           <option value="Arrived">Arrived</option>
+           <option value="Boarding">Boarding</option>
+           <option value="Cancelled">Cancelled</option>
         </select>
         <button
           type="submit"
