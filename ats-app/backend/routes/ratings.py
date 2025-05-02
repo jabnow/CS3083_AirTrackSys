@@ -37,12 +37,8 @@ def get_my_ratings():
 @login_required
 def add_rating():
     """
-<<<<<<< HEAD
-    Add or update a rating (1–5) and comment for a past flight ticket.
-=======
     Customer-only: add or update a rating (1–5) and optional comment for one of the user's tickets.
     Expects JSON { ticket_ID, rating, comment? }.
->>>>>>> origin/joy_new
     """
     data = request.get_json() or {}
     body = utility.convertBody(
@@ -76,7 +72,6 @@ def add_rating():
         conn.close()
         return jsonify({'msg': 'not your ticket'}), 403
 
-<<<<<<< HEAD
     # Check if the flight is in the past
     cur.execute("""
         SELECT 1 FROM purchases p
@@ -95,9 +90,6 @@ def add_rating():
 
     # Update rating and comment
     print(f"📤 Updating rating for ticket {body['ticket_ID']} to {r} with comment: {body.get('comment')}")
-=======
-    # update rating/comment
->>>>>>> origin/joy_new
     cur.execute(
         """
         UPDATE purchases

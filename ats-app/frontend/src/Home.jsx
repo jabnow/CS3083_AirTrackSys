@@ -22,9 +22,8 @@ export default function Home() {
       setError('')
       try {
         const today = new Date().toISOString().slice(0, 10)
-        const res = await axios.get('/api/flights/future', { params: { departure_date: today }, withCredentials: true })
+        const res = await axios.get('/api/flights/future', {withCredentials: true })
         setFlightResults(res.data.flights_to || [])
-        setFlightResults(res.flights_to || [])
       } catch (err) {
         setError(err.message)
       } finally {
