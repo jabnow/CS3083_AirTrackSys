@@ -50,7 +50,6 @@ def check_connection():
             host = "localhost",
             user = "root",      # change with your own settings
             password = "", # change with your own settings
-            password = "", # change with your own settings
             database = "air_traffic_reservation_system",   # change with your own settings
             port = 3306,  # change with your own settings
         )

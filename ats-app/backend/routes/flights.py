@@ -155,7 +155,7 @@ def update_status():
     Headers: X-User-Id, X-User-Role
     Body: airline_name, flight_number, departure_timestamp, status
     """
-    valid_status = ["Scheduled", "On-Time", "Delayed", "Departed", "Arrived"]
+    valid_status = ["On-Time","Delayed","Arrived","Boarding","Cancelled"]
 
     user_id = request.headers.get('X-User-Id')
     user_role = request.headers.get('X-User-Role')

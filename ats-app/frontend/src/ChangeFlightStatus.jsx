@@ -67,12 +67,11 @@ function ChangeFlightStatus() {
           required
           className="input"
         >
-          <option value="">Select Status</option>
-          <option value="Boarding">Boarding</option>
-          <option value="On-Time">On-Time</option>
-          <option value="Delayed">Delayed</option>
-          <option value="Cancelled">Cancelled</option>
-          <option value="Arrived">Arrived</option>
+           <option value="On-Time">On-Time</option>
+           <option value="Delayed">Delayed</option>
+           <option value="Arrived">Arrived</option>
+           <option value="Boarding">Boarding</option>
+           <option value="Cancelled">Cancelled</option>
         </select>
 
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
