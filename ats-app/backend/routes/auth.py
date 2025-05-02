@@ -9,10 +9,10 @@ from flask_login import UserMixin, LoginManager, login_user, logout_user, login_
 from datetime import datetime
 from dateutil import relativedelta
 from db import getdb
-from utility import convertBody, convertDate, convertDatetime, convertMonth
+from utility import convertBody
 
 # blueprint
-auth_api = Blueprint('auth', __name__, url_prefix='/api/auth')
+auth_api = Blueprint('auth_api', __name__, url_prefix='/api/auth')
 
 class User(UserMixin):
     def __init__(self, id, role='customer'):    # default to customer
