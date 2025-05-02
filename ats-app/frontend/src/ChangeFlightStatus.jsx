@@ -30,7 +30,7 @@ export default function ChangeFlightStatus() {
 
     try {
       const res = await axios.post(
-        'http://localhost:5000/api/flights_api/status',
+        'http://localhost:5000/api/flights/status', // ok ik this is wrong but the endpoint is flights_api/status
         payload,
         { withCredentials: true }
       );
