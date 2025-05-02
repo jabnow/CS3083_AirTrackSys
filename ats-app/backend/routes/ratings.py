@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from db import getdb
 import utility
+from flask_login import current_user
 
 ratings_api = Blueprint('ratings_api', __name__, url_prefix='/api/ratings')
 
