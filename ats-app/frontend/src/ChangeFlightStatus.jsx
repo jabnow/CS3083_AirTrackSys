@@ -2,31 +2,41 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-function ChangeFlightStatus() {
+export default function ChangeFlightStatus() {
   const [formData, setFormData] = useState({
     airline_name: '',
     flight_number: '',
     departure_timestamp: '',
     status: ''
   });
-
   const [message, setMessage] = useState('');
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
+
+    // build a payload with seconds appended
+    const payload = {
+      ...formData,
+      // "2024-12-01T10:00" → "2024-12-01T10:00:00"
+      departure_timestamp: formData.departure_timestamp + ':00' // format YYYY-MM-DDTHH:MM:SS
+    };
+
     try {
-      const res = await axios.post('/api/flights/status', formData, { withCredentials: true });
-      setMessage(res.data.msg || 'Status updated successfully!');
+      const res = await axios.post(
+        'http://localhost:5000/api/flights/status',
+        payload,
+        { withCredentials: true }
+      );
+      setMessage(res.data.msg);
     } catch (err) {
-      const errMsg = err.response?.data?.msg || err.response?.data?.error || 'Update failed';
-      setMessage(errMsg);
+      setMessage(err.response?.data?.msg || err.message);
     }
   };
 
@@ -59,6 +69,7 @@ function ChangeFlightStatus() {
           onChange={handleChange}
           required
           className="input"
+          step="60"                     /* only minute‐resolution */
         />
         <select
           name="status"
@@ -67,14 +78,18 @@ function ChangeFlightStatus() {
           required
           className="input"
         >
-           <option value="On-Time">On-Time</option>
-           <option value="Delayed">Delayed</option>
-           <option value="Arrived">Arrived</option>
-           <option value="Boarding">Boarding</option>
-           <option value="Cancelled">Cancelled</option>
+          <option value="">Select Status</option>
+          <option value="On-Time">On-Time</option>
+          <option value="Delayed">Delayed</option>
+          <option value="Arrived">Arrived</option>
+          <option value="Boarding">Boarding</option>
+          <option value="Cancelled">Cancelled</option>
         </select>
 
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
           Update Status
         </button>
       </form>
@@ -82,5 +97,3 @@ function ChangeFlightStatus() {
     </div>
   );
 }
-
-export default ChangeFlightStatus;
