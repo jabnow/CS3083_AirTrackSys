@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS Ticket (
     flight_number VARCHAR(20), -- Foreign key to flight(flight_number)
     departure_timestamp TIMESTAMP, -- Foreign key to flight(departure_timestamp)
     airline_name VARCHAR(100) NOT NULL, -- Foreign key to flight(airline_name)
-    email VARCHAR(100) NOT NULL, -- Foreign key to customer(email)
+    email VARCHAR(100), -- Foreign key to customer(email), can be NULL for unpurchased tickets
     customer_name VARCHAR(100) NOT NULL, 
     sold_price FLOAT NOT NULL,
     -- CONSTRAINT

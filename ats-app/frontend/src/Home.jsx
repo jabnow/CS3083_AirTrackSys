@@ -15,7 +15,28 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleCheckboxChange = (e) => setRoundTrip(e.target.checked);
+  useEffect(() => {
+    // Load all future flights on mount
+    async function loadAll() {
+      setLoading(true)
+      setError('')
+      try {
+        const today = new Date().toISOString().slice(0, 10)
+        const res = await axios.get('/api/flights/future', { params: { departure_date: today }, withCredentials: true })
+        setFlightResults(res.data.flights_to || [])
+        setFlightResults(res.flights_to || [])
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadAll()
+  }, [])
+
+  const handleCheckboxChange = (e) => {
+    setRoundTrip(e.target.checked);
+  };
 
   const handleSearchFlights = async (e) => {
     e.preventDefault();

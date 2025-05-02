@@ -12,10 +12,9 @@ from datetime import datetime
 flights_api = Blueprint('flights_api', __name__, url_prefix='/api/flights')
 
 @flights_api.route('/', methods=['GET'])
-
 def list_flights():
     """
-    Staff-only: list flights with optional filters.
+    Public: list flights with optional filters.
     """
     try:
         params = utility.convertParams(
@@ -93,122 +92,227 @@ def list_flights():
         })
     return jsonify({'flights': flights}), 200
 
-@flights_api.route('/create', methods=['POST'])
 
+@flights_api.route('/create', methods=['POST'])
+@login_required
 def create_flight():
     """
-    Create a new flight (header-based role check, no login required).
-    Requires 'X-User-Id' and 'X-User-Role' headers.
+    Staff-only: create a new flight.
     """
-    user_id = request.headers.get('X-User-Id')
-    user_role = request.headers.get('X-User-Role')
-
-    if not user_id or user_role != 'staff':
+    if current_user.role != 'staff':
         return jsonify({'msg': 'staff only'}), 403
 
     try:
-        data = request.get_json() or {}
-
-        # Manual parsing
-        airline_name = str(data.get('airline_name', '')).strip()
-        flight_number = str(data.get('flight_number', '')).strip()
-        airplane_ID = str(data.get('airplane_ID', '')).strip()
-        departure_timestamp = str(data.get('departure_timestamp', '')).strip()
-        arrival_timestamp = str(data.get('arrival_timestamp', '')).strip()
-        departure_airport_code = str(data.get('departure_airport_code', '')).strip()
-        arrival_airport_code = str(data.get('arrival_airport_code', '')).strip()
-        base_price = float(data.get('base_price', 0))
-        operating_airline_name= str(data.get('airline_name', '')).strip()
-    except Exception as e:
-        return jsonify({'msg': f'invalid input: {e}'}), 400
-
-    # Basic validation
-    if not all([airline_name, flight_number, airplane_ID, departure_timestamp, arrival_timestamp, departure_airport_code, arrival_airport_code]):
+        body = utility.convertBody(
+            request.get_json() or {},
+            {
+                'airline_name': 'airline_name',
+                'flight_number': 'flight_number',
+                'operating_airline_name': 'operating_airline_name',
+                'airplane_ID': 'airplane_ID',
+                'departure_timestamp': 'departure_timestamp',
+                'departure_airport_code': 'departure_airport_code',
+                'arrival_timestamp': 'arrival_timestamp',
+                'arrival_airport_code': 'arrival_airport_code',
+                'base_price': 'base_price',
+                'status': 'status'
+            },
+            auto_date=True
+        )
+    except:
+        return jsonify({'msg': 'invalid field'}), 422
+    if body is False:
         return jsonify({'msg': 'missing field'}), 422
+
+    if body['status'] not in utility.valid_status:
+        return jsonify({'msg': 'invalid status'}), 409
 
     conn = getdb()
     cur = conn.cursor()
 
+    staff_airline = utility.getStaff(cur, current_user.id, 'employer_name')
+    if not staff_airline or staff_airline[0] != body['airline_name']:
+        cur.close(); conn.close()
+        return jsonify({'msg': 'Not authorized'}), 403
+
     try:
         cur.execute(
-            "INSERT INTO flight (airline_name, flight_number, operating_airline_name, departure_timestamp, departure_airport_code, "
-            "arrival_timestamp, arrival_airport_code, base_price, airplane_ID) "
-            "VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s)",
-            (airline_name, flight_number,operating_airline_name, departure_timestamp, departure_airport_code,
-             arrival_timestamp, arrival_airport_code, base_price, airplane_ID)
+            "INSERT INTO flight (airline_name, flight_number, departure_timestamp, departure_airport_code,"
+            " arrival_timestamp, arrival_airport_code, base_price, status, airplane_ID)"
+            " VALUES (%(airline_name)s, %(flight_number)s, %(departure_timestamp)s, %(departure_airport_code)s,"
+            " %(arrival_timestamp)s, %(arrival_airport_code)s, %(base_price)s, %(status)s, %(airplane_ID)s)",
+            body
         )
         conn.commit()
     except Exception as e:
         conn.rollback()
+        current_app.logger.error("Flight creation failed", exc_info=e)
         cur.close(); conn.close()
-        print("❌ Flight insert error:", e)
         return jsonify({'msg': 'duplicate or invalid'}), 409
 
     cur.close(); conn.close()
     return jsonify({'msg': 'flight created'}), 201
 
+# @flights_api.route('/create', methods=['POST'])
+# @login_required
+# def create_flight():
+#     """
+#     Create a new flight (header-based role check, no login required).
+#     Requires 'X-User-Id' and 'X-User-Role' headers.
+#     """
+#     user_id = request.headers.get('X-User-Id')
+#     user_role = request.headers.get('X-User-Role')
+
+#     if not user_id or user_role != 'staff':
+#         return jsonify({'msg': 'staff only'}), 403
+
+#     try:
+#         data = request.get_json() or {}
+
+#         # Manual parsing
+#         airline_name = str(data.get('airline_name', '')).strip()
+#         flight_number = str(data.get('flight_number', '')).strip()
+#         airplane_ID = str(data.get('airplane_ID', '')).strip()
+#         departure_timestamp = str(data.get('departure_timestamp', '')).strip()
+#         arrival_timestamp = str(data.get('arrival_timestamp', '')).strip()
+#         departure_airport_code = str(data.get('departure_airport_code', '')).strip()
+#         arrival_airport_code = str(data.get('arrival_airport_code', '')).strip()
+#         base_price = float(data.get('base_price', 0))
+#         operating_airline_name= str(data.get('airline_name', '')).strip()
+#     except Exception as e:
+#         return jsonify({'msg': f'invalid input: {e}'}), 400
+
+#     # Basic validation
+#     if not all([airline_name, flight_number, airplane_ID, departure_timestamp, arrival_timestamp, departure_airport_code, arrival_airport_code]):
+#         return jsonify({'msg': 'missing field'}), 422
+
+#     conn = getdb()
+#     cur = conn.cursor()
+
+#     try:
+#         cur.execute(
+#             "INSERT INTO flight (airline_name, flight_number, operating_airline_name, departure_timestamp, departure_airport_code, "
+#             "arrival_timestamp, arrival_airport_code, base_price, airplane_ID) "
+#             "VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s)",
+#             (airline_name, flight_number,operating_airline_name, departure_timestamp, departure_airport_code,
+#              arrival_timestamp, arrival_airport_code, base_price, airplane_ID)
+#         )
+#         conn.commit()
+#     except Exception as e:
+#         conn.rollback()
+#         cur.close(); conn.close()
+#         print("❌ Flight insert error:", e)
+#         return jsonify({'msg': 'duplicate or invalid'}), 409
+
+#     cur.close(); conn.close()
+#     return jsonify({'msg': 'flight created'}), 201
+
 
 @flights_api.route('/status', methods=['POST'])
+@login_required
 def update_status():
+    print("🔔 status endpoint hit")
     """
-    Update flight status (requires staff role via headers).
-    Headers: X-User-Id, X-User-Role
-    Body: airline_name, flight_number, departure_timestamp, status
+    Staff-only: update flight status.
     """
-    valid_status = ["Scheduled", "On-Time", "Delayed", "Departed", "Arrived"]
+    if current_user.role != 'staff':
+        return jsonify({'msg': 'staff only'}), 403
 
-    user_id = request.headers.get('X-User-Id')
-    user_role = request.headers.get('X-User-Role')
-
-    
-
-    try:
-        data = request.get_json() or {}
-        airline_name = str(data.get('airline_name', '')).strip()
-        flight_number = str(data.get('flight_number', '')).strip()
-        status=str(data.get('status','')).strip()
-
-        print(status)
-        # Parse incoming string and extract date part only (YYYY-MM-DD)
-        departure_timestamp_raw = str(data.get('departure_timestamp', '')).strip()
-        try:
-            departure_timestamp = datetime.fromisoformat(departure_timestamp_raw).date().isoformat()
-        except ValueError:
-            return jsonify({'msg': 'Invalid departure_timestamp format, expected ISO datetime'}), 400
-        status = str(data.get('status', '')).strip()
-        print(departure_timestamp)
-    except Exception as e:
-        return jsonify({'msg': f'invalid input: {e}'}), 400
-
-    if not all([airline_name, flight_number, departure_timestamp, status]):
+    body = utility.convertBody(
+        request.get_json() or {},
+        {
+            'airline_name': 'airline_name',
+            'flight_number': 'flight_number',
+            'departure_timestamp': 'departure_timestamp',
+            'status': 'status'
+        },
+        auto_date=True
+    )
+    if body is False:
         return jsonify({'msg': 'missing field'}), 422
-    if status not in valid_status:
+
+    if body['status'] not in utility.valid_status:
         return jsonify({'msg': 'invalid status'}), 409
+
+    ts = datetime.fromisoformat(body['departure_timestamp']).strftime('%Y-%m-%d %H:%M:%S')
 
     conn = getdb(); cur = conn.cursor()
     try:
-        print(status)
-        print(airline_name)
-        print(flight_number)
-        departure_raw = data.get('departure_timestamp', '')
-        departure_raw = datetime.fromisoformat(departure_raw).strftime('%Y-%m-%d %H:%M:%S')
-        print(departure_raw)
         cur.execute(
-            "UPDATE Flight SET status = %s "
-            "WHERE airline_name = %s AND flight_number = %s AND departure_timestamp = %s",
-            (status, airline_name, flight_number, departure_raw)
+            "UPDATE flight SET status=%s "
+            "WHERE airline_name=%s AND flight_number=%s AND DATE_FORMATdeparture_timestamp=%s", 
+            (body['status'], body['airline_name'], body['flight_number'], ts)
         )
-
-
         conn.commit()
     except Exception as e:
         conn.rollback()
+        current_app.logger.error("Status update failed", exc_info=e)
         cur.close(); conn.close()
-        print("❌ Status update error:", e)
         return jsonify({'msg': 'update failed'}), 500
 
     cur.close(); conn.close()
     return jsonify({'msg': 'status updated'}), 202
+
+# @flights_api.route('/status', methods=['POST'])
+# @login_required
+# def update_status():
+#     print("🔔 status endpoint hit")
+#     """
+#     Update flight status (requires staff role via headers).
+#     Headers: X-User-Id, X-User-Role
+#     Body: airline_name, flight_number, departure_timestamp, status
+#     """
+#     if current_user.role != 'staff':
+#         return jsonify({'msg': 'staff only'}), 403
+#     valid_status = ["On-Time","Delayed","Arrived","Boarding","Cancelled"]    
+
+#     try:
+#         data = request.get_json() or {}
+#         airline_name = str(data.get('airline_name', '')).strip()
+#         flight_number = str(data.get('flight_number', '')).strip()
+#         status=str(data.get('status','')).strip()
+
+#         print(status)
+#         # Parse incoming string and extract date part only (YYYY-MM-DD)
+#         departure_timestamp_raw = str(data.get('departure_timestamp', '')).strip()
+#         try:
+#             departure_timestamp = datetime.fromisoformat(departure_timestamp_raw).date().isoformat()
+#         except ValueError:
+#             return jsonify({'msg': 'Invalid departure_timestamp format, expected ISO datetime'}), 400
+#         status = str(data.get('status', '')).strip()
+#         print(departure_timestamp)
+#     except Exception as e:
+#         return jsonify({'msg': f'invalid input: {e}'}), 400
+
+#     if not all([airline_name, flight_number, departure_timestamp, status]):
+#         return jsonify({'msg': 'missing field'}), 422
+#     if status not in valid_status:
+#         return jsonify({'msg': 'invalid status'}), 409
+
+#     conn = getdb(); cur = conn.cursor()
+#     try:
+#         print(status)
+#         print(airline_name)
+#         print(flight_number)
+#         departure_raw = data.get('departure_timestamp', '')
+#         departure_raw = datetime.fromisoformat(departure_raw).strftime('%Y-%m-%d %H:%M:%S')
+#         print(departure_raw)
+#         cur.execute(
+#             "UPDATE Flight SET status = %s "
+#             "WHERE airline_name = %s AND flight_number = %s AND departure_timestamp = %s",
+#             (status, airline_name, flight_number, departure_raw)
+#         )
+
+
+#         conn.commit()
+#     except Exception as e:
+#         conn.rollback()
+#         cur.close(); conn.close()
+#         print("❌ Status update error:", e)
+#         return jsonify({'msg': 'update failed'}), 500
+
+#     cur.close(); conn.close()
+#     return jsonify({'msg': 'status updated'}), 202
 
 
 
@@ -335,7 +439,7 @@ def schedule():
         cur.execute(query,params)
         flights = cur.fetchall(); cur.close(); conn.close()
         return jsonify({'flights':flights}),200
-    # Staff path
+
     elif current_user.role == 'staff':
         # Must specify airline to view
         if 'airline' not in params or not params['airline']:
@@ -403,38 +507,4 @@ def schedule():
                 }
             })
         return jsonify({'flights': flights}), 200
-    abort(501)  # rip
-
-
-# note to self: or QUESTIONS FOR DEY 4/27
-    """
-    1. by default show the future flights for customer
-    customer can also see their past reviews / comments on past flights
-    staff can see all flights for their airline, including past ones
-    
-    2. do i need to add a filter function for flights? what does "multiple views mean"??
-    customers can also see other ratings and comments for flights (public or their own?? or only staff can see it also??)
-    - only customer themselves and staff can see the reviews?
-    
-    3. staff can see their future flights up to 30 days by default, show by employer, airline
-    
-    4. what is pID referring to? the customer username?
-    what flask examples?? is that in brightspace??
-    i've just been generating random passkeys for each session bruhh
-    
-    5. sql injection protection & normalization stuff
-    which files do i need to be careful about this?
-    idk ask more about what this instruction means (hi prof, please be more specific & give example if possible ASAP)
-    
-    6. what should a user dashboard look like? have a navbar with all the functions?
-    what should a staff dashboard look like? can he (prof ratan) draw us a mockup or diagram somehow lol
-    oh yeah how should user purchase tickets - does he want a separate page for each action (navbar) or just reload the components
-    
-    
-    7. [HELP AHH] VIEW REPORTS - STAFF ONLY (I DIDN'T DO THIS YET AHHH - JW)
-    . View reports: Total amounts of ticket sold based on range of dates/last year/last month etc. 
-    . Month-wise tickets sold in a bar chart/table. 
-    Question: is this for unique sold, the purchase date or the flight date?
-    How to: Count entries in ticket table based on last year, last month
-    can we just ask prof how to do this and where to put this
-    """
+    abort(501)

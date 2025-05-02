@@ -6,9 +6,9 @@ Implementation Air Ticket Reservation System as a web-based application POC
 This is the semester project for "Intro to Databases (CS-UY 3083)" course at NYU Tandon with Professor RatanDey. It involves designing, implementing, and deploying an online Air Ticket Reservation System, covering the full database development lifecycle: conceptual design, logical design, database implementation, and the creation of an associated web-based application.
 
 ### Team Members:
-- Dorien Zhang
 - Joy Wang
 - Vihan Vora
+- Dorien Zhang
 
 ## Project Parts and Deliverables
 
@@ -68,9 +68,9 @@ Implement the Air Ticket Reservation System as a web-based application using you
 
 ## Contribution Statement:
 Clearly state the tasks completed by each team member:
-- Dorien: tbd
-- Joy: tbd
-- Vihan: tbd
+- Joy: backend, DB, APIs in Flask
+- Vihan: frontend in React
+- Dorien: backend, routes, documentation
 
 ---
 

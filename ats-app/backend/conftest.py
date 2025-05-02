@@ -1,5 +1,5 @@
-# import pytest
-from backend.db import getdb
+import pytest
+from db import getdb
 
 # check if connection can be made to MYSQL
 # pass condition: is run bash: pytest -q
