@@ -8,7 +8,7 @@ from routes.auth import User
 
 app = Flask(__name__)
 app.secret_key = 'dev' 
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 app.config.from_object(Config)
 
 # ✅ Setup login manager

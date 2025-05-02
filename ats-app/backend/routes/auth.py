@@ -63,30 +63,52 @@ def register():
 
     connection = getdb(); cur = connection.cursor()
     if role == 'staff':
-        # Insert into airline_staff
-        cur.execute(
-            "INSERT INTO airline_staff(username, employer_name, password, first_name, last_name, date_of_birth)"
-            " VALUES (%s,%s,%s,%s,%s,%s)",
-            (
-                data['username'],
-                data['employer_name'],
-                generate_password_hash(data['password']),
-                escape(data['first_name']),
-                escape(data['last_name']),
-                data['date_of_birth']
-            )
-        )
-        # Check if staff already exists
-        for email in data.get('emails') or []:
+    # Check if username exists
+        cur.execute("SELECT COUNT(*) FROM airline_staff WHERE username = %s", (data['username'],))
+        if cur.fetchone()[0] > 0:
+            cur.close()
+            connection.close()
+            return jsonify({'msg': 'Username already exists'}), 409
+
+        print("🔑 Registering staff with username:", data['username'])
+        
+        try:
+            # Insert staff record
             cur.execute(
-                "INSERT INTO Staff_Email(username, email) VALUES (%s,%s)",
-                (data['username'], escape(email))
+                "INSERT INTO airline_staff(username, employer_name, password, first_name, last_name, date_of_birth) "
+                "VALUES (%s, %s, %s, %s, %s, %s)",
+                (
+                    data['username'],
+                    data['employer_name'],
+                    data['password'],
+                    str(escape(data['first_name'])),
+                    str(escape(data['last_name'])),
+                    data['date_of_birth']
+                )
             )
-        for phone in data.get('phones') or []:
-            cur.execute(
-                "INSERT INTO Staff_Phone(username, phone_number) VALUES (%s,%s)",
-                (data['username'], escape(phone))
-            )
+
+            # Handle emails
+            for email in data.get('emails') or []:
+                cur.execute(
+                    "INSERT IGNORE INTO Staff_Email(username, email) VALUES (%s,%s)",
+                    (data['username'], str(escape(email)))
+                )
+
+            # Handle phones
+            for phone in data.get('phones') or []:
+                cur.execute(
+                    "INSERT IGNORE INTO Staff_Phone(username, phone_number) VALUES (%s,%s)",
+                    (data['username'], str(escape(phone)))
+                )
+
+            connection.commit()
+        except Exception as e:
+            connection.rollback()
+            cur.close()
+            connection.close()
+            print("❌ Staff registration error:", e)
+            return jsonify({'msg': 'Registration failed'}), 500
+    
     else:
         # Create new customer
         cur.execute(
@@ -95,8 +117,8 @@ def register():
             " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
             (
                 data['email'],
-                escape(data['first_name']),
-                escape(data['last_name']),
+                str(escape(data['first_name'])),
+                str(escape(data['last_name'])),
                 #generate_password_hash(data['password']),
                 data['password'],
                 data['building_number'],
