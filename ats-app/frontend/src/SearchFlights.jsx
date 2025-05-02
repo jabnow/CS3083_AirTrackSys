@@ -18,11 +18,11 @@ export default function SearchFlights() {
 
     if (source) {
       params.source_airport = source;
-      params.source_city = source;
+      // params.source_city = source;
     }
     if (destination) {
       params.destination_airport = destination;
-      params.destination_city = destination;
+      // params.destination_city = destination;
     }
     if (departureDate) {
       params.departure_date = departureDate; // Already YYYY-MM-DD
