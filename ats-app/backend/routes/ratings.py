@@ -40,7 +40,7 @@ def get_my_ratings():
 @ratings_api.route('/add', methods=['POST'])
 def add_rating():
     """
-    Add or update a rating (1–5) and comment for a ticket the customer purchased.
+    Add or update a rating (1–5) and comment for a past flight ticket.
     """
     print("hi")
     data = request.get_json() or {}
@@ -86,6 +86,22 @@ def add_rating():
         conn.close()
         print(f"❌ Ticket {body['ticket_ID']} not found")
         return jsonify({'msg': 'Ticket not found'}), 404
+
+    # Check if the flight is in the past
+    cur.execute("""
+        SELECT 1 FROM purchases p
+        JOIN ticket t ON t.ticket_ID = p.ticket_ID
+        JOIN flight f ON f.flight_number = t.flight_number 
+            AND f.departure_timestamp = t.departure_timestamp 
+            AND f.airline_name = t.airline_name
+        WHERE p.ticket_ID = %s AND f.arrival_timestamp < NOW()
+    """, (body['ticket_ID'],))
+
+    if cur.fetchone() is None:
+        cur.close()
+        conn.close()
+        print(f"❌ Cannot rate future flight or ticket {body['ticket_ID']} not found")
+        return jsonify({'msg': 'Can only rate past flights'}), 403
 
     # Update rating and comment
     print(f"📤 Updating rating for ticket {body['ticket_ID']} to {r} with comment: {body.get('comment')}")
