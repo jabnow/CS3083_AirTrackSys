@@ -97,8 +97,7 @@ def register():
                 data['email'],
                 escape(data['first_name']),
                 escape(data['last_name']),
-                #generate_password_hash(data['password']),
-                data['password'],
+                generate_password_hash(data['password']),
                 data['building_number'],
                 data['street'],
                 data['city'],
@@ -136,7 +135,11 @@ def login():
     cur.close()
     connection.close()
 
+
     if not row:
+        return jsonify({'msg': 'Invalid credentials'}), 401
+    hashed_password = row[0]
+    if not check_password_hash(hashed_password, raw.get('password', '')):
         return jsonify({'msg': 'Invalid credentials'}), 401
 
     # Skipping password check intentionally per your earlier request
