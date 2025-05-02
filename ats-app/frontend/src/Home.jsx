@@ -16,39 +16,43 @@ export default function Home() {
   const [error, setError] = useState('');
 
   const handleCheckboxChange = (e) => setRoundTrip(e.target.checked);
-
   const handleSearchFlights = async (e) => {
     e.preventDefault();
-    if (!source || !destination || !departureDate) {
-      setError("Please fill in source, destination, and departure date.");
-      return;
+    setError(null);
+    setFlightResults([]);
+    const params = {};
+  
+    if (source) {
+      params.source_airport = source;
+      params.source_city = source;
     }
-
-    const queryParams = {
-      source_airport: source,
-      destination_airport: destination,
-      departure_date: departureDate,
-      return_date: roundTrip ? returnDate : undefined,
-    };
-
-    console.log("Requesting /api/flights/future with params:", queryParams);
-
-    setLoading(true);
-    setError('');
+    if (destination) {
+      params.destination_airport = destination;
+      params.destination_city = destination;
+    }
+    if (departureDate) {
+      params.departure_date = departureDate;
+    }
+    if (roundTrip && returnDate) {
+      params.return_date = returnDate;
+    }
+  
+    console.log("📡 Sending flight search with:", params);
+  
     try {
-      const response = await axios.get('http://localhost:5000//api/flights/future', {
-        params: queryParams,
+      const res = await axios.get('http://127.0.0.1:5000/api/flights/future', {
+        params,
         withCredentials: false,
       });
-      console.log(response);
-      setFlightResults(response.data.flights_to || []);
-    } catch (error) {
-      console.error('Error searching flights:', error);
-      setError(error.response?.data?.msg || error.message);
-    } finally {
-      setLoading(false);
+      console.log("✅ Flights received:", res.data);
+      setFlightResults(res.data.flights_to || []);
+    } catch (err) {
+      console.error("❌ Search error:", err);
+      setError(err.response?.data?.msg || err.message);
     }
   };
+  
+
 
   useEffect(() => {
 

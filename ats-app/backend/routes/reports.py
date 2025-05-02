@@ -25,11 +25,11 @@ def tickets_sold_report():
     cur.execute(
         """
         SELECT  p.ticket_ID, t.flight_number,
-            DATE_FORMAT(p.purchase_timestamp, '%%Y-%%m') AS month,
+            DATE_FORMAT(p.purchase_timestamp, '%Y-%m') AS month,
             COUNT(*) AS tickets_sold
         FROM purchases p
         JOIN ticket t ON t.ticket_ID = p.ticket_ID
-        WHERE DATE_FORMAT(p.purchase_timestamp, '%%Y-%%m') BETWEEN %(from_month)s AND %(to_month)s
+        WHERE DATE_FORMAT(p.purchase_timestamp, '%Y-%m') BETWEEN %(from_month)s AND %(to_month)s
         GROUP BY t.airline_name, t.flight_number, month
         ORDER BY t.flight_number, month
         """, params
@@ -38,8 +38,15 @@ def tickets_sold_report():
     rows = cur.fetchall(); cur.close(); conn.close()
     print(rows)
     print("why why why")
-    counts = {row[0]: row[1] for row in rows}
+    
 
+    month_totals = {}
+    for _, _, month, count in rows:
+        if month not in month_totals:
+            month_totals[month] = 0
+        month_totals[month] += count
+
+    # Fill missing months with 0
     def next_month(ym):
         y, m = map(int, ym.split('-'))
         return f"{y+1}-01" if m == 12 else f"{y:04d}-{m+1:02d}"
@@ -47,7 +54,10 @@ def tickets_sold_report():
     result = {'tickets_sold': []}
     current = from_month
     while current <= to_month:
-        result['tickets_sold'].append({'month': current, 'count': counts.get(current, 0)})
+        result['tickets_sold'].append({
+            'month': current,
+            'count': month_totals.get(current, 0)
+        })
         current = next_month(current)
 
     return jsonify(result), 200
@@ -63,29 +73,33 @@ def tickets_sold_by_flight():
 
     params = {'from_month': from_month, 'to_month': to_month}
     conn = getdb(); cur = conn.cursor()
+    print(from_month)
+    print(to_month)
     cur.execute(
         """
-        SELECT  p.ticket_ID, t.flight_number,
-               DATE_FORMAT(p.purchase_timestamp, '%%Y-%%m') AS month,
+        SELECT t.flight_number,
+               DATE_FORMAT(p.purchase_timestamp, '%Y-%m') AS month,
                COUNT(*) AS tickets_sold
         FROM purchases p
         JOIN ticket t ON t.ticket_ID = p.ticket_ID
-        WHERE DATE_FORMAT(p.purchase_timestamp, '%%Y-%%m') BETWEEN %(from_month)s AND %(to_month)s
+        WHERE DATE_FORMAT(p.purchase_timestamp, '%Y-%m') BETWEEN %(from_month)s AND %(to_month)s
         GROUP BY t.flight_number, month
         ORDER BY t.flight_number, month
         """, params
     )
     rows = cur.fetchall(); cur.close(); conn.close()
+    print("hi")
+    for row in rows:
+        print(row)
 
     def next_month(ym):
         y, m = map(int, ym.split('-'))
         return f"{y+1}-01" if m == 12 else f"{y:04d}-{m+1:02d}"
 
     report = {}
-    for airline, _, flight_no, month, count in rows:
-        key = f"{airline}-{flight_no}"
+    for flight_no, month, count in rows:
+        key = f"{flight_no}"
         report.setdefault(key, {
-            'airline_name': airline,
             'flight_number': flight_no,
             'counts': {}
         })['counts'][month] = count
@@ -101,7 +115,6 @@ def tickets_sold_by_flight():
             })
             current = next_month(current)
         flights.append({
-            'airline_name': data['airline_name'],
             'flight_number': data['flight_number'],
             'monthly_sales': monthly
         })

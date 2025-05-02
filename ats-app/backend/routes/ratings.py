@@ -77,15 +77,23 @@ def add_rating():
     # Ensure the ticket exists with the provided ticket_ID (No email check now as per request)
     print(f"🔍 Verifying if ticket_ID {body['ticket_ID']} exists in purchases")
     cur.execute(
-        "SELECT 1 FROM purchases WHERE ticket_ID = %s",
-        (body['ticket_ID'],)  # Ensure ticket exists based on ticket_ID
+        """
+        SELECT 1
+        FROM purchases p
+        JOIN ticket t ON t.ticket_ID = p.ticket_ID
+        WHERE p.ticket_ID = %s
+        AND t.departure_timestamp < NOW()
+        """,
+        (body['ticket_ID'],)
     )
+
 
     if cur.fetchone() is None:
         cur.close()
         conn.close()
+        print('Flight not departed')
         print(f"❌ Ticket {body['ticket_ID']} not found")
-        return jsonify({'msg': 'Ticket not found'}), 404
+        return jsonify({'msg': 'Ticket not found/not departed'}), 404
 
     # Update rating and comment
     print(f"📤 Updating rating for ticket {body['ticket_ID']} to {r} with comment: {body.get('comment')}")
@@ -142,3 +150,69 @@ def get_all_flight_ratings():
     conn.close()
 
     return jsonify({'ratings': rows}), 200
+    
+@ratings_api.route('/flight', methods=['GET'])
+def get_flight_ratings_for_staff():
+    """
+    Staff-only: for a specific flight, return its average rating and all comments.
+    Expects query params: airline_name, flight_number, departure_timestamp (YYYY-MM-DD).
+    """
+   
+
+    airline = request.args.get('airline_name')
+    flight_no = request.args.get('flight_number')
+    dep_date = request.args.get('departure_timestamp')
+    if not airline or not flight_no or not dep_date:
+        return jsonify({'msg': 'missing field'}), 422
+
+    conn = getdb()
+    cur = conn.cursor(dictionary=True)
+
+    # fetch all reviews
+    cur.execute(
+        """
+        SELECT p.email,
+               p.rating,
+               p.comment,
+               p.purchase_timestamp
+          FROM purchases p
+          JOIN ticket t
+            ON t.ticket_ID = p.ticket_ID
+          JOIN flight f
+            ON f.flight_number = t.flight_number
+           AND DATE(f.departure_timestamp) = %s
+           AND f.airline_name = %s
+           AND f.flight_number = %s
+         WHERE p.rating IS NOT NULL
+         ORDER BY p.purchase_timestamp DESC
+        """,
+        (dep_date, airline, flight_no)
+    )
+    reviews = cur.fetchall()
+
+    # compute average
+    cur.execute(
+        """
+        SELECT AVG(p.rating) AS average_rating
+          FROM purchases p
+          JOIN ticket t
+            ON t.ticket_ID = p.ticket_ID
+          JOIN flight f
+            ON f.flight_number = t.flight_number
+           AND DATE(f.departure_timestamp) = %s
+           AND f.airline_name = %s
+           AND f.flight_number = %s
+         WHERE p.rating IS NOT NULL
+        """,
+        (dep_date, airline, flight_no)
+    )
+    avg_row = cur.fetchone()
+    average = avg_row['average_rating'] or 0.0
+
+    cur.close()
+    conn.close()
+
+    return jsonify({
+        'average_rating': round(average, 2),
+        'reviews': reviews
+    }), 200
