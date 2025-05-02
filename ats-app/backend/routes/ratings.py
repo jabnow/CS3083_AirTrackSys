@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from db import getdb
+from flask_login import current_user
 import utility
 from flask_login import current_user
 
@@ -143,3 +144,40 @@ def get_all_flight_ratings():
     conn.close()
 
     return jsonify({'ratings': rows}), 200
+
+
+# need to add ability to check for average rating for a flight (verify staff login)
+# temp placeholder for now
+@ratings_api.route('/average', methods=['GET'])
+def get_average_rating():
+    """
+    Staff-only: Return average rating for a flight.
+    Requires 'X-User-Role' header to be 'staff'.
+    """
+    print("🛬 Staff is fetching average rating for a flight...")
+
+    # Extract flight number and airline name from query parameters
+    flight_number = request.args.get('flight_number')
+    airline_name = request.args.get('airline_name')
+
+    if not flight_number or not airline_name:
+        return jsonify({'msg': 'missing field'}), 422
+
+    conn = getdb()
+    cur = conn.cursor(dictionary=True)
+
+    # Calculate average rating for the specified flight
+    cur.execute("""
+        SELECT AVG(rating) AS average_rating
+        FROM purchases p
+        JOIN ticket t ON t.ticket_ID = p.ticket_ID
+        JOIN flight f ON f.flight_number = t.flight_number 
+                      AND f.departure_timestamp = t.departure_timestamp 
+                      AND f.airline_name = t.airline_name
+        WHERE f.flight_number = %s AND f.airline_name = %s AND p.rating IS NOT NULL
+    """, (flight_number, airline_name))
+
+    row = cur.fetchone()
+    
+    if row['average_rating'] is None:
+        average_rating = 0.0

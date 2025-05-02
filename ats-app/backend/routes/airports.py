@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 import json
 from db import getdb
 
+# from flask import render_template, redirect, url_for, flash
 airports_api = Blueprint('airports_api', __name__, url_prefix='/api/airports')
 
 @airports_api.route('/', methods=['POST'])
