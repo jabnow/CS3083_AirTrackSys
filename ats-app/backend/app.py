@@ -4,11 +4,11 @@ import mysql.connector as _mysql_connector
 from config import Config
 from db import getdb
 from flask_login import LoginManager
-from routes.auth import User  # ✅ import your User class
+from routes.auth import User  
 
 app = Flask(__name__)
 app.secret_key = 'dev' 
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app)
 app.config.from_object(Config)
 
 # ✅ Setup login manager
@@ -51,6 +51,7 @@ def check_connection():
             user = "root",      # change with your own settings
             password = "", # change with your own settings
             database = "air_traffic_reservation_system",   # change with your own settings
+            port = 3306,       # change with your own settings
         )
         return True
     except _mysql_connector.Error as e:
