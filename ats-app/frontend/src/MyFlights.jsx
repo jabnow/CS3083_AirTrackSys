@@ -1,33 +1,44 @@
 import React, { useState, useEffect } from 'react'
-import { flights } from './services'
+import axios from 'axios'
 
 export default function MyFlights({ user }) {
-  const [flightsData, setFlightsData] = useState([])
+  const [purchases, setPurchases] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    async function fetchMyFlights() {
+
+    async function fetchMyPurchases() {
       setError('')
       setLoading(true)
       try {
-        const res = await flights.schedule({
-          type: 'customer',
-          email: user.username
+        console.log("📡 Fetching from /api/purchases with user:", user );
+        const res = await axios.get('http://127.0.0.1:5000/api/purchases/my', {
+          withCredentials: false,
+          headers: {
+            'X-User-Id': user.id
+          }
+        
         })
-        setFlightsData(res.flights || [])
+        
+        console.log("🧑 Current user:", user);
+        console.log("✅ Response from /api/purchases:", res)
+        setPurchases(res.data.purchases || [])
       } catch (err) {
-        setError(err.message)
-      } finally {
+        
+        console.error("❌ Axios error:", err);
+        setError(err.response?.data?.msg || err.message)
+      }finally {
         setLoading(false)
       }
     }
-    if (user && user.role === 'customer') fetchMyFlights()
+    console.log("🔍 useEffect triggered with user:", user)
+    if (user?.role === 'customer') fetchMyPurchases()
   }, [user])
 
   const now = new Date()
-  const upcoming = flightsData.filter(f => new Date(f.departure_date_time) > now)
-  const past     = flightsData.filter(f => new Date(f.departure_date_time) <= now)
+  const upcoming = purchases.filter(f => new Date(f.departure_timestamp) > now)
+  const past     = purchases.filter(f => new Date(f.departure_timestamp) <= now)
 
   return (
     <div className="my-flights-container max-w-4xl mx-auto p-6 bg-white shadow rounded">
@@ -40,12 +51,11 @@ export default function MyFlights({ user }) {
           <h3 className="text-xl font-semibold mb-2">Upcoming Flights</h3>
           <ul className="space-y-4">
             {upcoming.map(f => (
-              <li key={f.ticket_id} className="border p-4 rounded">
+              <li key={f.ticket_ID} className="border p-4 rounded">
+                <div>{f.ticket_ID}</div>
                 <div><strong>{f.airline_name} {f.flight_number}</strong></div>
-                <div>Departs: {new Date(f.departure_date_time).toLocaleString()} from {f.departure_airport_code}</div>
-                <div>Arrives: {new Date(f.arrival_date_time).toLocaleString()} at {f.arrival_airport_code}</div>
-                <div>Status: {f.status}</div>
-                <div>Price: ${f.calculated_price?.toFixed(2) ?? f.base_price.toFixed(2)}</div>
+                <div>Departs: {new Date(f.departure_timestamp).toLocaleString()}</div>
+                <div>Price: ${f.sold_price.toFixed(2)}</div>
               </li>
             ))}
           </ul>
@@ -57,13 +67,13 @@ export default function MyFlights({ user }) {
           <h3 className="text-xl font-semibold mb-2">Past Flights</h3>
           <ul className="space-y-4">
             {past.map(f => (
-              <li key={f.ticket_id} className="border p-4 rounded">
+              <li key={f.ticket_ID} className="border p-4 rounded">
                 <div><strong>{f.airline_name} {f.flight_number}</strong></div>
-                <div>On: {new Date(f.departure_date_time).toLocaleString()}</div>
-                {f.comment && (
+                <div>On: {new Date(f.departure_timestamp).toLocaleString()}</div>
+                {f.rating && (
                   <div className="mt-2">
-                    <div><strong>Your Rating:</strong> {f.comment.rating} / 5</div>
-                    {f.comment.comment && <div><strong>Comment:</strong> {f.comment.comment}</div>}
+                    <div><strong>Your Rating:</strong> {f.rating} / 5</div>
+                    {f.comment && <div><strong>Comment:</strong> {f.comment}</div>}
                   </div>
                 )}
               </li>
