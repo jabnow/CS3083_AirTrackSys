@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS airport (
 CREATE TABLE IF NOT EXISTS airline_staff (
     username VARCHAR(50), -- Primary key
     employer_name VARCHAR(100) NOT NULL,  -- Foreign key to Airline(name)
-    password VARCHAR(100) NOT NULL,
+    password VARCHAR(256) NOT NULL,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     date_of_birth DATE,
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS Customer (
     email VARCHAR(100), -- Primary Key 
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    password VARCHAR(100) NOT NULL,
+    password VARCHAR(256) NOT NULL,
     building_number VARCHAR(10) NOT NULL,
     street VARCHAR(100) NOT NULL,
     city VARCHAR(100) NOT NULL,

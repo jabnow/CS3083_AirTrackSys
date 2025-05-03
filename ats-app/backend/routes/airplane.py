@@ -1,71 +1,44 @@
 from flask import Blueprint, jsonify, request
-import utility  # it's a custom file
-from flask_login import login_required, current_user
 import json
 from db import getdb
-from config import Config
 
 airplane_api = Blueprint('airplane_api', __name__, url_prefix='/api/airplane')
 
 @airplane_api.route('/', methods=['PUT'])
-@login_required
 def add_airplane():
-    try:
-        body = utility.convert_Body(
-            json.loads(request.data.decode('utf-8')),
-            {
-                'airplane_ID': 'airplane_ID',
-                'owner_name' : 'owner_name',
-                'seats' : 'seats',
-                'manufacturer' : 'manufacturer'
-            }
-        )
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400  # idk which error codes to use, just going by suggested nums - JW
-    if body is False:
-        return jsonify({'msg': 'missing field'}), 422
-    
-    # btw user permissions: only staff can edit airplanes
-    if getattr(current_user, 'role', None) != 'staff':
-        return jsonify({'msg': 'Staff Only'}), 403
-    
-    # can only book if seats are available
-    try:
-        if int(body['seats']) <= 0:
-            return jsonify({'error': 'seats must be positive'}), 422
-    except Exception:
-        return jsonify({'msg': 'there are no available seats left'}), 422
+    print("✈️ Received airplane add request")
 
-    
-    # apparently all staff have to be employed by an airline
+    try:
+        data = json.loads(request.data.decode('utf-8'))
+        airplane_ID = str(data.get('airplane_ID', '')).strip()
+        owner_name = str(data.get('owner_name', '')).strip()
+        manufacturer = str(data.get('manufacturer', '')).strip()
+        seats = int(data.get('seats', 0))
+    except Exception as e:
+        return jsonify({'error': f'Invalid input format: {str(e)}'}), 400
+
+    # Validation
+    if not all([airplane_ID, owner_name, manufacturer]):
+        return jsonify({'msg': 'missing field'}), 422
+    if seats <= 0:
+        return jsonify({'msg': 'seats must be positive'}), 422
+    if len(airplane_ID) > 20 or len(owner_name) > 100 or len(manufacturer) > 100:
+        return jsonify({'msg': 'field length exceeds limit'}), 422
+
     connection = getdb()
     cursor = connection.cursor()
-    airline_staff = utility.get_staff(
-        cursor,
-        current_user.username,
-        'employer_name'
-    )
-    if airline_staff != body['owner_name']:
-        cursor.close()
-        connection.close()
-        return jsonify({'msg': 'Not authorized for this airline'}), 403
-    
+
     try:
         cursor.execute(
             '''
-            INSERT INTO Airplane(
+            INSERT INTO Airplane (
                 airplane_ID,
                 owner_name,
                 seats,
                 manufacturer
-            ) VALUES (
-                %(airplane_ID)s,
-                %(owner_name)s,
-                %(seats)s,
-                %(manufacturer)s
-            )
+            ) VALUES (%s, %s, %s, %s)
             ''',
-            body,
+            (airplane_ID, owner_name, seats, manufacturer)
         )
         connection.commit()
     except Exception as e:
@@ -73,6 +46,7 @@ def add_airplane():
         cursor.close()
         connection.close()
         return jsonify({'msg': 'invalid field or duplicate key'}), 409
+
     cursor.close()
     connection.close()
     return jsonify({'msg': 'airplane created successfully'}), 201

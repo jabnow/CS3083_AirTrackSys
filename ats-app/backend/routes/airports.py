@@ -1,77 +1,47 @@
 from flask import Blueprint, jsonify, request
-import utility  # it's a custom file
-from flask_login import login_required, current_user
 import json
 from db import getdb
-from config import Config
 
 airports_api = Blueprint('airports_api', __name__, url_prefix='/api/airports')
 
 @airports_api.route('/', methods=['POST'])
-@login_required
-# I guess this is a use case that airline staff are supposed to have - DZ
-def create_airport():  
-    # authorization check - only staff can create airports - JW
-    if getattr(current_user, 'role', None) != 'staff':
-        return jsonify({'msg': 'Staff Only'}), 403
-    
-    # ok now go
+def create_airport():
+    print("🛬 Received airport creation request")
+
     try:
-        body = utility.convert_Body(
-            json.loads(request.data.decode('utf-8')),
-            {
-                'code': 'code',
-                'name' : 'name',
-                'city' : 'city',
-                'country' : 'country'
-            }
-        )
+        data = json.loads(request.data.decode('utf-8'))
+        code = str(data.get('code', '')).strip().upper()
+        name = str(data.get('name', '')).strip()
+        city = str(data.get('city', '')).strip()
+        country = str(data.get('country', '')).strip()
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
-    if body is False:
+        return jsonify({'error': f'Invalid input format: {str(e)}'}), 400
+
+    # Basic validation
+    if not all([code, name, city, country]):
         return jsonify({'msg': 'missing field'}), 422
-    
+    if len(code) > 10 or len(name) > 100 or len(city) > 100 or len(country) > 100:
+        return jsonify({'msg': 'field length exceeds limit'}), 422
+
     connection = getdb()
     cursor = connection.cursor()
-
     try:
         cursor.execute(
             '''
-            INSERT INTO Airport(
-                code,
-                name,
-                city,
-                country,
-            ) VALUES (
-                %(code)s,
-                %(name)s,
-                %(city)s,
-                %(country)s
-            )
+            INSERT INTO Airport (
+                code, name, city, country
+            ) VALUES (%s, %s, %s, %s)
             ''',
-            body,
+            (code, name, city, country)
         )
         connection.commit()
-    except:
+    except Exception as e:
         connection.rollback()
         cursor.close()
         connection.close()
+        print("❌ SQL insert error:", e)
         return jsonify({'msg': 'invalid field or duplicate key'}), 409
+
     cursor.close()
     connection.close()
     return jsonify({'msg': 'airport created successfully'}), 201
-
-
-# might be useful for testing - JW
-@airports_api.route('/', methods=['GET'])
-def list_airports():
-    """
-    List all airports.
-    """
-    connection = getdb()
-    cur = connection.cursor(dictionary=True)
-    cur.execute("SELECT code, name, city, country FROM airport")
-    airports = cur.fetchall()
-    cur.close()
-    connection.close()
-    return jsonify(airports), 200
