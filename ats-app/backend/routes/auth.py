@@ -64,29 +64,50 @@ def register():
     connection = getdb(); cur = connection.cursor()
     if role == 'staff':
         # Insert into airline_staff
-        cur.execute(
-            "INSERT INTO airline_staff(username, employer_name, password, first_name, last_name, date_of_birth)"
-            " VALUES (%s,%s,%s,%s,%s,%s)",
-            (
-                data['username'],
-                data['employer_name'],
-                generate_password_hash(data['password']),
-                escape(data['first_name']),
-                escape(data['last_name']),
-                data['date_of_birth']
-            )
-        )
-        # Check if staff already exists
-        for email in data.get('emails') or []:
+        print("🧪 PARAMS:", (
+            data['username'],
+            data['employer_name'],
+            generate_password_hash(data['password']),
+            escape(data['first_name']),
+            escape(data['last_name']),
+            data['date_of_birth']
+        ))
+        try:
             cur.execute(
-                "INSERT INTO Staff_Email(username, email) VALUES (%s,%s)",
-                (data['username'], escape(email))
+                "INSERT INTO airline_staff(username, employer_name, password, first_name, last_name, date_of_birth)"
+                " VALUES (%s,%s,%s,%s,%s,%s)",
+                (
+                    data['username'],
+                    data['employer_name'],
+                    generate_password_hash(data['password']),
+                    escape(data['first_name']),
+                    escape(data['last_name']),
+                    data['date_of_birth']
+                )
             )
-        for phone in data.get('phones') or []:
-            cur.execute(
-                "INSERT INTO Staff_Phone(username, phone_number) VALUES (%s,%s)",
-                (data['username'], escape(phone))
-            )
+        except mysql.connector.IntegrityError as e:
+            print("❌ Duplicate Key Error:", e)
+            return jsonify({'msg': 'Duplicate user – username may already exist'}), 409
+
+        
+        # Process and insert staff emails
+        emails_raw = data.get('emails', '')
+        emails = [e.strip() for e in emails_raw.split(',') if e.strip()] if emails_raw else []
+
+        for email in emails:
+            cur.execute("SELECT 1 FROM Staff_Email WHERE username = %s AND email = %s", (data['username'], escape(email)))
+            if not cur.fetchone():
+                cur.execute("INSERT INTO Staff_Email(username, email) VALUES (%s, %s)", (data['username'], escape(email)))
+
+        # Process and insert staff phone numbers
+        phones_raw = data.get('phones', '')
+        phones = [p.strip() for p in phones_raw.split(',') if p.strip()] if phones_raw else []
+
+        for phone in phones:
+            cur.execute("SELECT 1 FROM Staff_Phone WHERE username = %s AND phone_number = %s", (data['username'], escape(phone)))
+            if not cur.fetchone():
+                cur.execute("INSERT INTO Staff_Phone(username, phone_number) VALUES (%s, %s)", (data['username'], escape(phone)))
+
     else:
         # Create new customer
         cur.execute(

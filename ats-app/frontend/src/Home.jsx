@@ -102,11 +102,12 @@ export default function Home() {
         <h2 style={{ marginBottom: '20px', color: '#004080' }}>Find Your Perfect Flight</h2>
         <form onSubmit={handleSearchFlights} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ display: 'flex', gap: '20px' }}>
-            <input type="text" placeholder="Source Airport Code (e.g. PVG)" value={source}
-              onChange={e => setSource(e.target.value)}
-              style={inputStyle} />
+            
             <input type="text" placeholder="Destination Airport Code (e.g. JFK)" value={destination}
               onChange={e => setDestination(e.target.value)}
+              style={inputStyle} />
+            <input type="text" placeholder="Source Airport Code (e.g. PVG)" value={source}
+              onChange={e => setSource(e.target.value)}
               style={inputStyle} />
           </div>
           <div style={{ display: 'flex', gap: '20px' }}>
