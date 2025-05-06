@@ -75,8 +75,7 @@ export default function CancelTrips({ user }) {
             <li key={f.ticket_ID} className="border p-4 rounded flex justify-between items-center">
               <div>
                 <div><strong>{f.airline_name} {f.flight_number}</strong></div>
-                <div>Departs: {new Date(f.departure_date_time).toLocaleString()}</div>
-                <div>From: {f.departure_airport_code} / To: {f.arrival_airport_code}</div>
+                <div>Departs: {new Date(f.departure_timestamp).toLocaleString()}</div>
               </div>
               <button
                 onClick={() => handleCancel(f.ticket_ID)}

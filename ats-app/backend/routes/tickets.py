@@ -157,7 +157,8 @@ def cancel_ticket(ticket_id):
 
     if (departure - datetime.utcnow()).total_seconds() < 24 * 3600:
         cur.close(); connection.close()
-        return jsonify({'msg': 'Cannot cancel within 24 hours'}), 403
+        return jsonify({'msg': 'Cannot cancel within 24 hours/Already departed'}), 403
+
 
     cur.execute("DELETE FROM purchases WHERE ticket_ID=%s AND email=%s", (ticket_id, customer_id))
     cur.execute("DELETE FROM ticket WHERE ticket_ID=%s", (ticket_id,))
