@@ -1,7 +1,7 @@
 // src/pages/CustomerDashboard.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import PlaneImage from './components/plane2.jpeg'; // 🛫 Make sure the plane2.jpeg is correctly placed
+import PlaneImage from './components/plane2.jpeg'; // 🛫 Make sure the plane2.jpeg is correctly placed <li><Link to="/search-flights">Search Flights</Link></li>
 
 function CustomerDashboard() {
   return (
@@ -65,7 +65,7 @@ function CustomerDashboard() {
         <img src={PlaneImage} alt="Customer Dashboard" className="customer-image" />
 
         <ul>
-          <li><Link to="/search-flights">Search Flights</Link></li>
+          
           <li><Link to="/my-flights">View My Flights</Link></li>
           <li><Link to="/purchase-ticket">Purchase Ticket</Link></li>
           <li><Link to="/cancel-trip">Cancel Trip</Link></li>

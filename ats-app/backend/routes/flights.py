@@ -7,6 +7,7 @@ from datetime import datetime
 # from ..constant import valid_status
 from flask import current_app
 from datetime import datetime
+from datetime import datetime, timedelta
 
 # Blueprint for flight management
 flights_api = Blueprint('flights_api', __name__, url_prefix='/api/flights')
@@ -191,13 +192,38 @@ def update_status():
         print(airline_name)
         print(flight_number)
         departure_raw = data.get('departure_timestamp', '')
-        departure_raw = datetime.fromisoformat(departure_raw).strftime('%Y-%m-%d %H:%M:%S')
-        print(departure_raw)
+        departure_trimmed = datetime.fromisoformat(departure_raw).strftime('%Y-%m-%d %H:%M')
+        print(departure_trimmed)
+        print("Running UPDATE for:")
+        print("  status =", status)
+        print("  airline_name =", airline_name)
+        print("  flight_number =", flight_number)
+        print("  departure_trimmed =", departure_trimmed)
+
+        departure_base = datetime.fromisoformat(departure_raw)
+        departure = datetime.fromisoformat(departure_raw)
+        start_of_minute = departure.replace(second=0)
+        end_of_minute = start_of_minute + timedelta(seconds=59)
+        print(start_of_minute)
+        print(end_of_minute)
         cur.execute(
-            "UPDATE Flight SET status = %s "
-            "WHERE airline_name = %s AND flight_number = %s AND departure_timestamp = %s",
-            (status, airline_name, flight_number, departure_raw)
+            """
+            UPDATE Flight SET status = %s
+            WHERE airline_name = %s AND flight_number = %s
+            AND departure_timestamp BETWEEN %s AND %s
+            """,
+            (
+                status,
+                airline_name,
+                flight_number,
+                start_of_minute.strftime('%Y-%m-%d %H:%M:%S'),
+                end_of_minute.strftime('%Y-%m-%d %H:%M:%S'),
+            )
         )
+        print("Rows affected:", cur.rowcount)
+        print("Rows affected:", cur.rowcount)
+
+
 
 
         conn.commit()

@@ -22,7 +22,9 @@ export default function CancelTrips({ user }) {
         console.log("🧑 Current user:", user);
         console.log("✅ Response from /api/purchases:", res);
 
-        const cancellable = (res.data.purchases || []);
+        const cancel_f = (res.data.purchases || []);
+        const now = new Date()
+        const cancellable = cancel_f.filter(f => new Date(f.departure_timestamp) > now)
         setUpcomingFlights(cancellable);
       } catch (err) {
         console.error("❌ Axios error:", err);

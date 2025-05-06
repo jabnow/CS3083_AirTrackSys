@@ -82,12 +82,15 @@ def purchase_ticket():
     )
 
     row = cur.fetchone()
+
     if not row:
         cur.close(); connection.close()
         return jsonify({'msg': 'Flight not found'}), 404
 
     base_price, departure_timestamp = row  # correctly unpack the row
-    print("💰 Base price:", base_price)
+    occupancy_ratio = booked / seats
+    base_price = base_price * 1.2 if occupancy_ratio > 0.6 else base_price
+    print("💰 Final price:", base_price)
     print("🕒 Full departure timestamp:", departure_timestamp)
     # demand_ratio = booked / seats
     # sold_price = base_price * (1.2 if demand_ratio >= 0.6 else 1.0)

@@ -10,6 +10,7 @@ from datetime import datetime
 from dateutil import relativedelta
 from db import getdb
 from utility import convertBody, convertDate, convertDatetime, convertMonth
+import hashlib
 
 # blueprint
 auth_api = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -157,11 +158,17 @@ def login():
     connection.close()
 
 
+
     if not row:
-        return jsonify({'msg': 'Invalid credentials'}), 401
+        return jsonify({'msg': 'Invalid credentials no email'}), 401
     hashed_password = row[0]
-    if not check_password_hash(hashed_password, raw.get('password', '')):
-        return jsonify({'msg': 'Invalid credentials'}), 401
+    check_password_hash(hashed_password, 'abcd')
+    print("🔍 Stored hash from DB:", hashed_password)
+    print("🔐 User entered password:", raw.get('password', ''))
+    hashed_input = hashlib.sha256(raw.get('password', '').encode()).hexdigest()  
+    print(hashed_input)
+    if not (check_password_hash(hashed_password, raw.get('password', '')) or hashed_input == hashed_password):
+        return jsonify({'msg': 'Invalid credentials wrong password'}), 401
 
     # Skipping password check intentionally per your earlier request
     user = User(identifier, role)
