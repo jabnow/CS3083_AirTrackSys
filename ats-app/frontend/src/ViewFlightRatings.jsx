@@ -119,7 +119,6 @@ function ViewFlightRatings({ user }) {
               <p className="ml-2">{rating.comment}</p>
             </div>
             <div className="text-sm text-gray-500">
-              <strong>Purchased on:</strong> {new Date(rating.purchase_timestamp).toLocaleString()}
             </div>
           </div>
         ))}

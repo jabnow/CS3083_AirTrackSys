@@ -123,7 +123,7 @@ export default function Home() {
             <input type="checkbox" id="roundTrip" checked={roundTrip} onChange={handleCheckboxChange} />
             <label htmlFor="roundTrip">Round Trip</label>
           </div>
-          <button type="submit" style={buttonStyle}>Search Flights</button>
+          <button type="submit" style={buttonStyle}>Search Flights(EST Timezone)</button>
           {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
         </form>
       </div>
