@@ -51,6 +51,56 @@ Implement the Air Ticket Reservation System as a web-based application using you
 - Customer use cases (view flights, search flights, purchase tickets, cancel trips, rating/commenting)
 - Airline staff use cases (view flights, create flights, update status, manage airplanes/airports, view ratings, reports)
 
+---
+### How to setup and run the application on localhost:
+Prereqs:
+MySQL server (or MariaDB) running locally on port 3306.
+Node.js v14+ and npm.
+Python 3.9+ and pip.
+
+1. Clone this repository
+```
+git clone https://github.com/jabnow/CS3083_AirTrackSys
+```
+3. Initialize DB and load data
+```
+mysql -u [username] -p [password] < [sql file name].sql
+mysql -u [username] -p [password] air_traffic_reservation_system < inserts.sql
+-- default user: root
+-- default pass: none
+```
+3. Create and activate virtual environment
+```
+python -m venv venv
+# macOS/Linux
+source venv/bin/activate
+# Windows
+.venv\Scripts\activate
+```
+4. Install dependencies
+```
+pip install -r requirements.txt
+# (optional) edit SECRET_KEY, DB_ settings as needed
+# cp .env.example .env
+```
+5. Run backend/server
+```
+# make sure MysQL is running before
+cd ats-app/backend
+flask --app app.py run
+```
+6. Start the frontend/development server
+```
+# open new terminal
+cd ats-app/frontend
+npm start
+```
+7. btw
+to kill either process, `Ctrl + C`
+to see interactions, open developer tools `Ctrl + Shift + I` or see terminal
+login password can be set by making credentials.py file which is in .gitignore, or hashing plaintext, 256 char
+---
+
 **Some progress photos:**
 ![Screenshot 2025-05-06 202236](https://github.com/user-attachments/assets/9fd95a2a-d760-434f-b3d6-a83d0f452cb7)
 ![Screenshot 2025-05-06 202246](https://github.com/user-attachments/assets/42e65a02-7e0a-4790-8179-be409b81a101)
@@ -68,11 +118,11 @@ Implement the Air Ticket Reservation System as a web-based application using you
 - Prevent cross-site scripting (XSS) vulnerabilities.
 - Provide user-friendly, role-specific interfaces.
 
-### Technical Stack:
+### Tech Stack:
 - Database: MySQL
-- Backend: [Specify backend language/framework, e.g., Python/Flask]
-- Frontend: [Specify frontend technology, e.g., HTML, CSS, JavaScript]
-
+- Backend: Python/Flask
+- Frontend: React/Java, CSS
+- API: express, axios
 ---
 
 ## Contribution Statement:
