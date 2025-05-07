@@ -32,7 +32,7 @@ function ChangeFlightStatus() {
 
   return (
     <div className="change-flight-status-container max-w-lg mx-auto p-6 bg-white shadow rounded">
-      <h2 className="text-2xl font-semibold mb-4 text-center">Change Flight Status</h2>
+      <h2 className="text-2xl font-semibold mb-4 text-center">Change Flight Status(use UTC time)</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"

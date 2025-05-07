@@ -49,7 +49,7 @@ export default function App() {
 
         {/* Customer Routes */}
         <Route path="/customer-dashboard" element={user?.role === 'customer' ? <CustomerDashboard /> : <Navigate to="/login" />} />
-        <Route path="/search-flights" element={<SearchFlights />} />
+        <Route path="/search-flights" element={user?.role === 'customer' ? <SearchFlights /> : <Navigate to="/login" />} />
         <Route path="/my-flights" element={<MyFlights user={user} />} />
         <Route path="/purchase-ticket" element={<PurchaseTicket user={user}/>} />
         <Route path="/cancel-trip" element={<CancelTrip user={user}/>} />

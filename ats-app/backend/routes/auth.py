@@ -10,6 +10,7 @@ from datetime import datetime
 from dateutil import relativedelta
 from db import getdb
 from utility import convertBody, convertDate, convertDatetime, convertMonth
+import hashlib
 
 # blueprint
 auth_api = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -64,29 +65,50 @@ def register():
     connection = getdb(); cur = connection.cursor()
     if role == 'staff':
         # Insert into airline_staff
-        cur.execute(
-            "INSERT INTO airline_staff(username, employer_name, password, first_name, last_name, date_of_birth)"
-            " VALUES (%s,%s,%s,%s,%s,%s)",
-            (
-                data['username'],
-                data['employer_name'],
-                generate_password_hash(data['password']),
-                escape(data['first_name']),
-                escape(data['last_name']),
-                data['date_of_birth']
-            )
-        )
-        # Check if staff already exists
-        for email in data.get('emails') or []:
+        print("🧪 PARAMS:", (
+            data['username'],
+            data['employer_name'],
+            generate_password_hash(data['password']),
+            escape(data['first_name']),
+            escape(data['last_name']),
+            data['date_of_birth']
+        ))
+        try:
             cur.execute(
-                "INSERT INTO Staff_Email(username, email) VALUES (%s,%s)",
-                (data['username'], escape(email))
+                "INSERT INTO airline_staff(username, employer_name, password, first_name, last_name, date_of_birth)"
+                " VALUES (%s,%s,%s,%s,%s,%s)",
+                (
+                    data['username'],
+                    data['employer_name'],
+                    generate_password_hash(data['password']),
+                    escape(data['first_name']),
+                    escape(data['last_name']),
+                    data['date_of_birth']
+                )
             )
-        for phone in data.get('phones') or []:
-            cur.execute(
-                "INSERT INTO Staff_Phone(username, phone_number) VALUES (%s,%s)",
-                (data['username'], escape(phone))
-            )
+        except mysql.connector.IntegrityError as e:
+            print("❌ Duplicate Key Error:", e)
+            return jsonify({'msg': 'Duplicate user – username may already exist'}), 409
+
+        
+        # Process and insert staff emails
+        emails_raw = data.get('emails', '')
+        emails = [e.strip() for e in emails_raw.split(',') if e.strip()] if emails_raw else []
+
+        for email in emails:
+            cur.execute("SELECT 1 FROM Staff_Email WHERE username = %s AND email = %s", (data['username'], escape(email)))
+            if not cur.fetchone():
+                cur.execute("INSERT INTO Staff_Email(username, email) VALUES (%s, %s)", (data['username'], escape(email)))
+
+        # Process and insert staff phone numbers
+        phones_raw = data.get('phones', '')
+        phones = [p.strip() for p in phones_raw.split(',') if p.strip()] if phones_raw else []
+
+        for phone in phones:
+            cur.execute("SELECT 1 FROM Staff_Phone WHERE username = %s AND phone_number = %s", (data['username'], escape(phone)))
+            if not cur.fetchone():
+                cur.execute("INSERT INTO Staff_Phone(username, phone_number) VALUES (%s, %s)", (data['username'], escape(phone)))
+
     else:
         # Create new customer
         cur.execute(
@@ -136,11 +158,17 @@ def login():
     connection.close()
 
 
+
     if not row:
-        return jsonify({'msg': 'Invalid credentials'}), 401
+        return jsonify({'msg': 'Invalid credentials no email'}), 401
     hashed_password = row[0]
-    if not check_password_hash(hashed_password, raw.get('password', '')):
-        return jsonify({'msg': 'Invalid credentials'}), 401
+    check_password_hash(hashed_password, 'abcd')
+    print("🔍 Stored hash from DB:", hashed_password)
+    print("🔐 User entered password:", raw.get('password', ''))
+    hashed_input = hashlib.sha256(raw.get('password', '').encode()).hexdigest()  
+    print(hashed_input)
+    if not (check_password_hash(hashed_password, raw.get('password', '')) or hashed_input == hashed_password):
+        return jsonify({'msg': 'Invalid credentials wrong password'}), 401
 
     # Skipping password check intentionally per your earlier request
     user = User(identifier, role)

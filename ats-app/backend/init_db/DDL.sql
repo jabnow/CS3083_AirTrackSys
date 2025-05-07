@@ -112,6 +112,7 @@ CREATE TABLE IF NOT EXISTS Ticket (
     FOREIGN KEY (email) REFERENCES Customer(email),
     FOREIGN KEY (flight_number, departure_timestamp, airline_name)
         REFERENCES Flight(flight_number, departure_timestamp, airline_name)
+    ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS payment_info (
