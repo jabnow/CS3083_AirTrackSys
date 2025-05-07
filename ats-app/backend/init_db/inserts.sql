@@ -93,7 +93,7 @@ VALUES
 ('9988 7766 5544 3311', 'debit', '2030-06-01', 'User 2');
 
 INSERT INTO payment_info(card_number, card_type, card_expiration_date, name_on_card)
-VALUES ('1111-2222-3333-5555', 'debit', '2030-06-01', 'User 3');
+VALUES ('1111 2222 3333 5555', 'debit', '2030-06-01', 'User 3');
 
 
 
