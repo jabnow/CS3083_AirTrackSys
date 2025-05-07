@@ -50,6 +50,14 @@ Implement the Air Ticket Reservation System as a web-based application using you
 - Customer use cases (view flights, search flights, purchase tickets, cancel trips, rating/commenting)
 - Airline staff use cases (view flights, create flights, update status, manage airplanes/airports, view ratings, reports)
 
+![Screenshot 2025-05-06 202236](https://github.com/user-attachments/assets/9fd95a2a-d760-434f-b3d6-a83d0f452cb7)
+![Screenshot 2025-05-06 202246](https://github.com/user-attachments/assets/42e65a02-7e0a-4790-8179-be409b81a101)
+![Screenshot 2025-05-01 013332](https://github.com/user-attachments/assets/ede28187-ac97-4e62-b55a-c7990e66628a)
+![Screenshot 2025-05-01 013352](https://github.com/user-attachments/assets/a4e91022-642d-4fa8-bc40-8856e844688e)
+![Screenshot 2025-05-01 013419](https://github.com/user-attachments/assets/361d04e7-9acb-45ad-86ca-7ce0ef876c26)
+![Screenshot 2025-05-01 013050](https://github.com/user-attachments/assets/3536c26a-9edf-484d-8404-53bef04f94d2)
+
+
 **Deadline:** 05/01/2025 11:59 PM
 
 ### Required Technical Implementation:
@@ -68,9 +76,9 @@ Implement the Air Ticket Reservation System as a web-based application using you
 
 ## Contribution Statement:
 Clearly state the tasks completed by each team member:
-- Joy: backend, DB, APIs in Flask
-- Vihan: frontend in React
-- Dorien: backend, routes, documentation
+- Joy: backend, DB, server config in Flask, API endpoints, session mgmt, auth
+- Vihan: frontend in React, cookies, server debugging, DB testing, demo
+- Dorien: backend routes, documentation
 
 ---
 
